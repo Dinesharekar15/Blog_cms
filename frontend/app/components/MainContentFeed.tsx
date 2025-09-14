@@ -127,7 +127,7 @@ export default function MainContentFeed() {
   return (
     <div className="flex-1 bg-gray-900">
       {/* Scrollable Content Area */}
-      <div className="h-screen overflow-y-auto scrollbar-hide hover:scrollbar-thin hover:scrollbar-thumb-gray-700 hover:scrollbar-track-black">
+      <div className="h-screen overflow-y-auto scrollbar-auto-hide">
         <div className="max-w-2xl mx-auto p-6 space-y-6">
           {blogPosts.map((post) => (
             <article
