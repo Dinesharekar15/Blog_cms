@@ -5,7 +5,7 @@ import TopNavigation from '../components/TopNavigation';
 import MainContentFeed from '../components/MainContentFeed';
 import RightSidebar from '../components/RightSidebar';
 
-export default function HomePage() {
+export default function DashboardPage() {
   return (
     <div className="bg-gray-900 min-h-screen flex overflow-hidden">
       {/* Fixed Left Sidebar Navigation */}

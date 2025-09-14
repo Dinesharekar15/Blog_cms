@@ -1,0 +1,76 @@
+'use client'
+
+import { useState } from 'react';
+
+export default function SidebarNavigation() {
+  const [activeNav, setActiveNav] = useState('home');
+
+  const navigationItems = [
+    { id: 'home', label: 'Home', icon: '🏠' },
+    { id: 'subscriptions', label: 'Subscriptions', icon: '📚' },
+    { id: 'chat', label: 'Chat', icon: '💬' },
+    { id: 'activity', label: 'Activity', icon: '📊' },
+    { id: 'search', label: 'Search', icon: '🔍' },
+    { id: 'dashboard', label: 'Dashboard', icon: '📈' }
+  ];
+
+  return (
+    <div className="bg-gray-900 text-white w-64 h-screen flex flex-col fixed left-0 top-0 z-40">
+      {/* Logo Section */}
+      <div className="p-6 border-b border-gray-800">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-pink-500 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-xl">C</span>
+          </div>
+          <span className="text-xl font-bold">CreatorCMS</span>
+        </div>
+      </div>
+
+      {/* Navigation Links */}
+      <nav className="flex-1 py-6">
+        <ul className="space-y-2 px-4">
+          {navigationItems.map((item) => (
+            <li key={item.id}>
+              <button
+                onClick={() => setActiveNav(item.id)}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
+                  activeNav === item.id
+                    ? 'bg-gray-800 text-white'
+                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                }`}
+              >
+                <span className="text-xl">{item.icon}</span>
+                <span className="font-medium">{item.label}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        {/* Create Button */}
+        <div className="px-4 mt-8">
+          <button className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+            Create
+          </button>
+        </div>
+      </nav>
+
+      {/* User Profile Section */}
+      <div className="p-4 border-t border-gray-800">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
+            <span className="text-white font-semibold">JD</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-white truncate">John Doe</p>
+            <p className="text-xs text-gray-400 truncate">john.doe@example.com</p>
+          </div>
+          <button className="text-gray-400 hover:text-white transition-colors duration-200">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
