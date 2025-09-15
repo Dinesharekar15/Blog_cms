@@ -5,7 +5,8 @@
   --foreground: #171717;
 }
 
-@theme inline {
+/* Custom theme colors */
+:root {
   --color-primary: #5682B1;
   --color-secondary: #739EC9;
   --color-hover:#A5C9E5;
@@ -24,6 +25,37 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+/* Force LTR direction globally */
+html, body, * {
+  direction: ltr !important;
+}
+
+/* TinyMCE specific RTL fixes */
+.tox-tinymce,
+.tox-editor-header,
+.tox-editor-container,
+.tox-sidebar-wrap,
+.mce-content-body,
+iframe[id*="tiny-react"] {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+/* Content area specific fixes */
+.mce-content-body,
+.mce-content-body * {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+/* Force all text elements to be LTR */
+p, div, span, h1, h2, h3, h4, h5, h6, li, td, th, input, textarea {
+  direction: ltr !important;
+  text-align: left !important;
 }
 
 /* Custom Scrollbar Styles */
