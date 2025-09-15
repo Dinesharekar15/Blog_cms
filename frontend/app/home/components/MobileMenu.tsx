@@ -87,12 +87,12 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+        className="fixed inset-0 bg-black bg-opacity-50 z-[60] md:hidden cursor-pointer"
         onClick={onClose}
       />
       
       {/* Mobile Menu */}
-      <div className={`fixed left-0 top-0 h-full w-80 bg-gray-900 text-white transform transition-transform duration-300 ease-in-out z-50 md:hidden ${
+      <div className={`fixed left-0 top-0 h-full w-80 bg-gray-900 text-white transform transition-transform duration-300 ease-in-out z-[70] md:hidden ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         
@@ -108,7 +108,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors duration-200"
+            className="p-2 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors duration-200 cursor-pointer"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -123,7 +123,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               <li key={item.id}>
                 <button
                   onClick={() => handleNavClick(item.id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer ${
                     activeNav === item.id
                       ? 'bg-gray-800 text-white'
                       : 'text-gray-300 hover:bg-gray-800 hover:text-white'
@@ -140,7 +140,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           <div className="px-4 mt-8">
             <button 
               onClick={handleCreateClick}
-              className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+              className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer"
             >
               Create New Post
             </button>
@@ -150,10 +150,10 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           <div className="border-t border-gray-800 mx-4 mt-8" />
 
           {/* User Profile Section */}
-          <div className="relative p-4" ref={profileRef}>
+          <div className=" relative p-4" ref={profileRef}>
             <button 
               onClick={handleProfileClick}
-              className="w-full flex items-center space-x-3 hover:bg-gray-800 rounded-lg p-2 transition-colors duration-200"
+              className="w-full flex items-center space-x-3 hover:bg-gray-800 rounded-lg p-2 transition-colors duration-200 cursor-pointer"
             >
               <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
                 <span className="text-white font-semibold">JD</span>
@@ -175,7 +175,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 {/* View Profile */}
                 <button
                   onClick={onClose}
-                  className="w-full flex items-center space-x-3 px-4 py-2 text-left text-gray-300 hover:bg-gray-800 hover:text-white transition-colors duration-200 rounded-lg"
+                  className="w-full flex items-center space-x-3 px-4 py-2 text-left text-gray-300 hover:bg-gray-800 hover:text-white transition-colors duration-200 rounded-lg cursor-pointer"
                 >
                   <span className="text-lg">👤</span>
                   <span className="text-sm font-medium">View Profile</span>
@@ -185,7 +185,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 <div>
                   <button
                     onClick={() => setIsAppearanceOpen(!isAppearanceOpen)}
-                    className={`w-full flex items-center space-x-3 px-4 py-2 text-left transition-colors duration-200 rounded-lg ${
+                    className={`w-full flex items-center space-x-3 px-4 py-2 text-left transition-colors duration-200 rounded-lg cursor-pointer ${
                       isAppearanceOpen 
                         ? 'bg-gray-800 text-white' 
                         : 'text-gray-300 hover:bg-gray-800 hover:text-white'
@@ -215,7 +215,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                         <button
                           key={themeOption.id}
                           onClick={() => handleThemeChange(themeOption.id as 'auto' | 'light' | 'dark')}
-                          className={`w-full flex items-center space-x-3 px-4 py-2 text-left text-sm rounded-md transition-colors duration-200 ${
+                          className={`w-full flex items-center space-x-3 px-4 py-2 text-left text-sm rounded-md transition-colors duration-200 cursor-pointer ${
                             currentTheme === themeOption.id
                               ? 'bg-gray-700 text-white font-semibold'
                               : 'text-gray-300 hover:bg-gray-700 hover:text-white'
@@ -237,7 +237,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 {/* Sign Out */}
                 <button
                   onClick={handleSignOut}
-                  className="w-full flex items-center space-x-3 px-4 py-2 text-left text-red-400 hover:bg-red-900/20 hover:text-red-300 transition-colors duration-200 font-medium rounded-lg"
+                  className="w-full flex items-center space-x-3 px-4 py-2 text-left text-red-400 hover:bg-red-900/20 hover:text-red-300 transition-colors duration-200 font-medium rounded-lg cursor-pointer"
                 >
                   <span className="text-lg">🚪</span>
                   <span className="text-sm font-semibold">Sign Out</span>

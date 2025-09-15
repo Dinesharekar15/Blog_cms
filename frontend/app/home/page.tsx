@@ -5,18 +5,19 @@ import SidebarNavigation from './components/SidebarNavigation';
 import TopNavigation from './components/TopNavigation';
 import MainContentFeed from './components/MainContentFeed';
 import RightSidebar from './components/RightSidebar';
-import MobileMenu from './components/MobileMenu';
+import MobileBottomMenu from './components/MobileBottomMenu';
 import MobileFAB from './components/MobileFAB';
+import BottomNavigationBar from './components/BottomNavigationBar';
 
 export default function HomePage() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileBottomMenuOpen, setIsMobileBottomMenuOpen] = useState(false);
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+  const toggleMobileBottomMenu = () => {
+    setIsMobileBottomMenuOpen(!isMobileBottomMenuOpen);
   };
 
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
+  const closeMobileBottomMenu = () => {
+    setIsMobileBottomMenuOpen(false);
   };
 
   return (
@@ -24,8 +25,8 @@ export default function HomePage() {
       {/* Desktop Left Sidebar Navigation */}
       <SidebarNavigation />
       
-      {/* Mobile Menu */}
-      <MobileMenu isOpen={isMobileMenuOpen} onClose={closeMobileMenu} />
+      {/* Mobile Bottom Menu */}
+      <MobileBottomMenu isOpen={isMobileBottomMenuOpen} onClose={closeMobileBottomMenu} />
       
       {/* Main Content Area */}
       <div className="flex-1 
@@ -34,7 +35,7 @@ export default function HomePage() {
         flex flex-col h-screen responsive-transition">
         
         {/* Fixed Top Navigation */}
-        <TopNavigation onMobileMenuToggle={toggleMobileMenu} />
+        <TopNavigation onMobileMenuToggle={toggleMobileBottomMenu} />
         
         {/* Scrollable Content Feed */}
         <MainContentFeed />
@@ -45,8 +46,12 @@ export default function HomePage() {
         <RightSidebar />
       </div>
 
-      {/* Mobile Floating Action Button */}
+      {/* Mobile Floating Create Button */}
       <MobileFAB />
+
+      {/* Bottom Navigation Bar */}
+      <BottomNavigationBar />
+
     </div>
   );
 }

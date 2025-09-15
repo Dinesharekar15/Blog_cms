@@ -128,7 +128,7 @@ export default function MainContentFeed() {
     <div className="flex-1 bg-gray-900">
       {/* Scrollable Content Area */}
       <div className="h-screen overflow-y-auto scrollbar-auto-hide">
-        <div className="max-w-2xl mx-auto p-6 space-y-6">
+        <div className="max-w-2xl mx-auto p-6 space-y-6 pb-24 md:pb-6">
           {blogPosts.map((post) => (
             <article
               key={post.id}
@@ -137,11 +137,11 @@ export default function MainContentFeed() {
               {/* Author Header */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-lg">
+                  <div className="cursor-pointer w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-lg">
                     {post.author.avatar}
                   </div>
                   <div>
-                    <div className="flex items-center space-x-2">
+                    <div className="cursor-pointer flex items-center space-x-2">
                       <h3 className="text-white font-semibold text-sm">{post.author.name}</h3>
                       {post.author.isVerified && (
                         <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
@@ -153,7 +153,7 @@ export default function MainContentFeed() {
                   </div>
                 </div>
                 <button
-                  className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                  className={` cursor-pointer px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
                     post.isSubscribed
                       ? 'bg-gray-600 text-gray-300 hover:bg-gray-500'
                       : 'bg-orange-500 text-white hover:bg-orange-600'

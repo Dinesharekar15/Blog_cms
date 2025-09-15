@@ -20,7 +20,7 @@ export default function MobileFAB({ onClick }: MobileFABProps) {
   return (
     <button
       onClick={handleClick}
-      className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 z-40 flex items-center justify-center group fab-pulse"
+      className="cursor-pointer md:hidden fixed bottom-20 right-6 w-14 h-14 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 z-40 flex items-center justify-center group fab-pulse"
       title="Create New Post"
     >
       {/* Plus Icon */}

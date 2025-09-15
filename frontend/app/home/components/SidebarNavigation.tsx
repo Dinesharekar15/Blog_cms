@@ -83,25 +83,25 @@ export default function SidebarNavigation() {
   };
 
   return (
-    <div className="bg-gray-900 text-white w-64 md:w-16 h-screen flex-col fixed left-0 top-0 z-40 hidden md:flex">
+    <div className="bg-gray-900 text-white w-64 md:w-16 lg:w-64 h-screen flex-col fixed left-0 top-0 z-40 hidden md:flex">
       {/* Logo Section */}
-      <div className="p-6 md:p-4 border-b border-gray-800">
-        <div className="flex items-center space-x-3 md:justify-center">
-          <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-pink-500 rounded-lg flex items-center justify-center">
+      <div className=" p-6 md:p-4 lg:p-6 border-b border-gray-800">
+        <div className="flex items-center space-x-3 md:justify-center lg:justify-start">
+          <div className=" cursor-pointer w-10 h-10 bg-gradient-to-r from-orange-500 to-pink-500 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-xl">C</span>
           </div>
-          <span className="text-xl font-bold md:hidden">CreatorCMS</span>
+          <span className="text-xl font-bold md:hidden lg:block">CreatorCMS</span>
         </div>
       </div>
 
       {/* Navigation Links */}
       <nav className="flex-1 py-6">
-        <ul className="space-y-2 px-4 md:px-2">
+        <ul className="space-y-2 px-4 md:px-2 lg:px-4">
           {navigationItems.map((item) => (
             <li key={item.id}>
               <button
                 onClick={() => setActiveNav(item.id)}
-                className={`w-full flex items-center space-x-3 md:justify-center md:space-x-0 px-4 md:px-2 py-3 rounded-lg text-left md:text-center transition-all duration-200 cursor-pointer group relative ${
+                className={`w-full flex items-center space-x-3 md:justify-center lg:justify-start md:space-x-0 lg:space-x-3 px-4 md:px-2 lg:px-4 py-3 rounded-lg text-left md:text-center lg:text-left transition-all duration-200 cursor-pointer group relative ${
                   activeNav === item.id
                     ? 'bg-gray-800 text-white'
                     : 'text-gray-300 hover:bg-gray-800 hover:text-white'
@@ -109,8 +109,8 @@ export default function SidebarNavigation() {
                 title={item.label} // Tooltip for icon-only mode
               >
                 <span className="text-xl">{item.icon}</span>
-                <span className="font-medium md:hidden">{item.label}</span>
-                {/* Tooltip for tablet mode */}
+                <span className="font-medium md:hidden lg:block">{item.label}</span>
+                {/* Tooltip for tablet mode only */}
                 <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 hidden md:block lg:hidden whitespace-nowrap pointer-events-none z-50">
                   {item.label}
                 </span>
@@ -120,15 +120,15 @@ export default function SidebarNavigation() {
         </ul>
 
         {/* Create Button */}
-        <div className="px-4 md:px-2 mt-8">
+        <div className="px-4 md:px-2 lg:px-4 mt-8">
           <button 
             onClick={handleCreateClick}
-            className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold py-3 px-6 md:px-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer group relative"
+            className="w-full text-xl bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold py-3 px-6 md:px-2 lg:px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer group relative flex items-center justify-center"
             title="Create"
           >
-            <span className="md:hidden">Create</span>
-            <span className="hidden md:block text-xl">✏️</span>
-            {/* Tooltip for tablet mode */}
+            <span className="md:hidden lg:block">Create</span>
+            <span className="hidden md:block lg:hidden text-xl">✏️</span>
+            {/* Tooltip for tablet mode only */}
             <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 hidden md:block lg:hidden whitespace-nowrap pointer-events-none z-50">
               Create
             </span>
@@ -137,25 +137,25 @@ export default function SidebarNavigation() {
       </nav>
 
       {/* User Profile Section */}
-      <div className="relative p-4 md:p-2 border-t border-gray-800" ref={profileRef}>
+      <div className="relative p-4 md:p-2 lg:p-4 border-t border-gray-800" ref={profileRef}>
         <button 
           onClick={handleProfileClick}
-          className="w-full flex items-center space-x-3 md:justify-center md:space-x-0 hover:bg-gray-800 rounded-lg p-2 transition-colors duration-200 cursor-pointer group relative"
+          className="w-full flex items-center space-x-3 md:justify-center lg:justify-start md:space-x-0 lg:space-x-3 hover:bg-gray-800 rounded-lg p-2 transition-colors duration-200 cursor-pointer group relative"
           title="Profile"
         >
           <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
             <span className="text-white font-semibold">JD</span>
           </div>
-          <div className="flex-1 min-w-0 text-left md:hidden">
+          <div className="flex-1 min-w-0 text-left md:hidden lg:block">
             <p className="text-sm font-medium text-white truncate">John Doe</p>
             <p className="text-xs text-gray-400 truncate">john.doe@example.com</p>
           </div>
-          <div className={`text-gray-400 transition-transform duration-200 md:hidden ${isProfileOpen ? 'rotate-180' : ''}`}>
+          <div className={`text-gray-400 transition-transform duration-200 md:hidden lg:block ${isProfileOpen ? 'rotate-180' : ''}`}>
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
           </div>
-          {/* Tooltip for tablet mode */}
+          {/* Tooltip for tablet mode only */}
           <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 hidden md:block lg:hidden whitespace-nowrap pointer-events-none z-50">
             John Doe
           </span>
