@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function SidebarNavigation() {
   const [activeNav, setActiveNav] = useState('home');
@@ -9,6 +10,7 @@ export default function SidebarNavigation() {
   const [currentTheme, setCurrentTheme] = useState<'auto' | 'light' | 'dark'>('dark');
   const profileRef = useRef<HTMLDivElement>(null);
   const appearanceRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   // Close profile popup when clicking outside
   useEffect(() => {
@@ -43,6 +45,11 @@ export default function SidebarNavigation() {
     }
   ];
 
+  const handleCreateClick = () => {
+    // Navigate to the publish page
+    router.push('/publish');
+  };
+
   const handleProfileClick = () => {
     const wasOpen = isProfileOpen;
     setIsProfileOpen(!isProfileOpen);
@@ -76,68 +83,87 @@ export default function SidebarNavigation() {
   };
 
   return (
-    <div className="bg-gray-900 text-white w-64 h-screen flex flex-col fixed left-0 top-0 z-40">
+    <div className="bg-gray-900 text-white w-64 md:w-16 h-screen flex-col fixed left-0 top-0 z-40 hidden md:flex">
       {/* Logo Section */}
-      <div className="p-6 border-b border-gray-800">
-        <div className="flex items-center space-x-3">
+      <div className="p-6 md:p-4 border-b border-gray-800">
+        <div className="flex items-center space-x-3 md:justify-center">
           <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-pink-500 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-xl">C</span>
           </div>
-          <span className="text-xl font-bold">CreatorCMS</span>
+          <span className="text-xl font-bold md:hidden">CreatorCMS</span>
         </div>
       </div>
 
       {/* Navigation Links */}
       <nav className="flex-1 py-6">
-        <ul className="space-y-2 px-4">
+        <ul className="space-y-2 px-4 md:px-2">
           {navigationItems.map((item) => (
             <li key={item.id}>
               <button
                 onClick={() => setActiveNav(item.id)}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer ${
+                className={`w-full flex items-center space-x-3 md:justify-center md:space-x-0 px-4 md:px-2 py-3 rounded-lg text-left md:text-center transition-all duration-200 cursor-pointer group relative ${
                   activeNav === item.id
                     ? 'bg-gray-800 text-white'
                     : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                 }`}
+                title={item.label} // Tooltip for icon-only mode
               >
                 <span className="text-xl">{item.icon}</span>
-                <span className="font-medium">{item.label}</span>
+                <span className="font-medium md:hidden">{item.label}</span>
+                {/* Tooltip for tablet mode */}
+                <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 hidden md:block lg:hidden whitespace-nowrap pointer-events-none z-50">
+                  {item.label}
+                </span>
               </button>
             </li>
           ))}
         </ul>
 
         {/* Create Button */}
-        <div className="px-4 mt-8">
-          <button className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer">
-            Create
+        <div className="px-4 md:px-2 mt-8">
+          <button 
+            onClick={handleCreateClick}
+            className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold py-3 px-6 md:px-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer group relative"
+            title="Create"
+          >
+            <span className="md:hidden">Create</span>
+            <span className="hidden md:block text-xl">✏️</span>
+            {/* Tooltip for tablet mode */}
+            <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 hidden md:block lg:hidden whitespace-nowrap pointer-events-none z-50">
+              Create
+            </span>
           </button>
         </div>
       </nav>
 
       {/* User Profile Section */}
-      <div className="relative p-4 border-t border-gray-800" ref={profileRef}>
+      <div className="relative p-4 md:p-2 border-t border-gray-800" ref={profileRef}>
         <button 
           onClick={handleProfileClick}
-          className="w-full flex items-center space-x-3 hover:bg-gray-800 rounded-lg p-2 transition-colors duration-200 cursor-pointer"
+          className="w-full flex items-center space-x-3 md:justify-center md:space-x-0 hover:bg-gray-800 rounded-lg p-2 transition-colors duration-200 cursor-pointer group relative"
+          title="Profile"
         >
           <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
             <span className="text-white font-semibold">JD</span>
           </div>
-          <div className="flex-1 min-w-0 text-left">
+          <div className="flex-1 min-w-0 text-left md:hidden">
             <p className="text-sm font-medium text-white truncate">John Doe</p>
             <p className="text-xs text-gray-400 truncate">john.doe@example.com</p>
           </div>
-          <div className={`text-gray-400 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`}>
+          <div className={`text-gray-400 transition-transform duration-200 md:hidden ${isProfileOpen ? 'rotate-180' : ''}`}>
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
           </div>
+          {/* Tooltip for tablet mode */}
+          <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 hidden md:block lg:hidden whitespace-nowrap pointer-events-none z-50">
+            John Doe
+          </span>
         </button>
 
         {/* Profile Pop-up Card */}
         {isProfileOpen && (
-          <div className="absolute bottom-0 left-full ml-2 w-80 bg-gray-800 border border-gray-700 rounded-xl shadow-2xl z-50 overflow-hidden">
+          <div className="absolute bottom-0 left-full ml-2 md:ml-4 w-80 bg-gray-800 border border-gray-700 rounded-xl shadow-2xl z-50 overflow-hidden">
             {/* Header */}
             <div className="p-4 border-b border-gray-700">
               <div className="flex items-center space-x-3">

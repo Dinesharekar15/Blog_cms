@@ -2,7 +2,7 @@
 
 export default function RightSidebar() {
   return (
-    <div className="w-80 bg-gray-800 border-l border-gray-700 h-screen flex flex-col">
+    <div className="w-80 bg-gray-800 border-l border-gray-700 h-screen flex-col hidden lg:flex">
       {/* Featured Content Section */}
       <div className="p-6">
         <h3 className="text-white font-semibold text-lg mb-6">Featured Content</h3>
