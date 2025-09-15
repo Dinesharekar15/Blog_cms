@@ -1,10 +1,10 @@
 'use client'
 
 import HeaderNavigation from './components/HeaderNavigation';
-import HeroSection from './components/HeroSection';
-import FeatureSection from './components/FeatureSection';
-import TestimonialSection from './components/TestimonialSection';
-import CreatorDirectorySection from './components/CreatorDirectorySection';
+import HeroSection from './components/landing/HeroSection';
+import FeatureSection from './components/landing/FeatureSection';
+import TestimonialSection from './components/landing/TestimonialSection';
+import CreatorDirectorySection from './components/landing/CreatorDirectorySection';
 import FooterSection from './components/FooterSection';
 
 export default function Home() {

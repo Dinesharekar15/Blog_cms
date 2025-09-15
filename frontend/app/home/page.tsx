@@ -1,9 +1,9 @@
 'use client'
 
-import SidebarNavigation from '../components/SidebarNavigation';
-import TopNavigation from '../components/TopNavigation';
-import MainContentFeed from '../components/MainContentFeed';
-import RightSidebar from '../components/RightSidebar';
+import SidebarNavigation from './components/SidebarNavigation';
+import TopNavigation from './components/TopNavigation';
+import MainContentFeed from './components/MainContentFeed';
+import RightSidebar from './components/RightSidebar';
 
 export default function HomePage() {
   return (

@@ -28,14 +28,14 @@ export default function HeaderNavigation() {
           {/* CTA & Sign-in - Far Right */}
           <div className="flex items-center space-x-4">
             {/* Sign In Link */}
-            <a href="#" className="text-gray-700 hover:text-gray-900 font-medium transition-colors duration-200 hidden sm:block">
+            <a href="/auth/signin" className="text-gray-700 hover:text-gray-900 font-medium transition-colors duration-200 hidden sm:block cursor-pointer">
               Sign in
             </a>
             
             {/* Primary CTA Button */}
-            <button className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold px-4 py-2 lg:px-6 lg:py-2.5 rounded-full text-sm lg:text-base transition-all duration-300 transform hover:scale-105 shadow-lg">
+            <a href="/auth/signup" className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold px-4 py-2 lg:px-6 lg:py-2.5 rounded-full text-sm lg:text-base transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer inline-block">
               Start Publishing
-            </button>
+            </a>
 
             {/* Mobile Menu Button */}
             <button 
@@ -59,7 +59,7 @@ export default function HeaderNavigation() {
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200 bg-white">
               {/* Mobile Navigation Links */}
               <div className="space-y-1">
-                <a href="#" className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md sm:hidden">Sign in</a>
+                <a href="/auth/signin" className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md sm:hidden cursor-pointer">Sign in</a>
               </div>
             </div>
           </div>
