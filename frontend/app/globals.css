@@ -45,6 +45,174 @@ iframe[id*="tiny-react"] {
   text-align: left !important;
 }
 
+/* Tiptap Editor Styles */
+.toolbar-btn {
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  color: #d1d5db;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toolbar-btn:hover {
+  color: white;
+  background-color: #4b5563;
+}
+
+.toolbar-btn.active {
+  background-color: #f97316;
+  color: white;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 1.5rem;
+  background-color: #4b5563;
+  margin: 0 0.25rem;
+}
+
+/* Tiptap Editor Content Styles */
+.ProseMirror {
+  outline: none;
+  color: white;
+  background: transparent;
+}
+
+.ProseMirror p {
+  margin: 1em 0;
+  line-height: 1.6;
+}
+
+.ProseMirror h1, 
+.ProseMirror h2, 
+.ProseMirror h3, 
+.ProseMirror h4, 
+.ProseMirror h5, 
+.ProseMirror h6 {
+  line-height: 1.3;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: bold;
+}
+
+.ProseMirror h1 {
+  font-size: 2.25rem;
+  color: #f97316;
+}
+
+.ProseMirror h2 {
+  font-size: 1.875rem;
+  color: #fb923c;
+}
+
+.ProseMirror h3 {
+  font-size: 1.5rem;
+  color: #fdba74;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1.5rem;
+  margin: 1em 0;
+}
+
+.ProseMirror li {
+  margin: 0.25em 0;
+  line-height: 1.6;
+}
+
+.ProseMirror blockquote {
+  border-left: 4px solid #f97316;
+  padding-left: 1rem;
+  margin: 1.5em 0;
+  font-style: italic;
+  color: #d1d5db;
+}
+
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1em 0;
+}
+
+.ProseMirror a {
+  color: #f97316;
+  text-decoration: underline;
+}
+
+.ProseMirror a:hover {
+  color: #fb923c;
+}
+
+.ProseMirror strong {
+  font-weight: bold;
+}
+
+.ProseMirror em {
+  font-style: italic;
+}
+
+.ProseMirror u {
+  text-decoration: underline;
+}
+
+.ProseMirror s {
+  text-decoration: line-through;
+}
+
+.ProseMirror .placeholder {
+  color: #6b7280;
+  pointer-events: none;
+  user-select: none;
+}
+
+.ProseMirror .placeholder::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Custom gray-750 color */
+.bg-gray-750 {
+  background-color: #374151;
+}
+
+.hover\:bg-gray-750:hover {
+  background-color: #374151;
+}
+
+/* Line clamp utilities */
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
 /* Content area specific fixes */
 .mce-content-body,
 .mce-content-body * {

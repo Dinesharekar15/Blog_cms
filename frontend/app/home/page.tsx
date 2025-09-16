@@ -8,9 +8,13 @@ import RightSidebar from './components/RightSidebar';
 import MobileBottomMenu from './components/MobileBottomMenu';
 import MobileFAB from './components/MobileFAB';
 import BottomNavigationBar from './components/BottomNavigationBar';
+import ActivitySidebar from '../components/ActivitySidebar';
+import SearchModal from '../components/SearchModal';
 
 export default function HomePage() {
   const [isMobileBottomMenuOpen, setIsMobileBottomMenuOpen] = useState(false);
+  const [isActivitySidebarOpen, setIsActivitySidebarOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   const toggleMobileBottomMenu = () => {
     setIsMobileBottomMenuOpen(!isMobileBottomMenuOpen);
@@ -20,10 +24,30 @@ export default function HomePage() {
     setIsMobileBottomMenuOpen(false);
   };
 
+  const handleActivityToggle = () => {
+    setIsActivitySidebarOpen(!isActivitySidebarOpen);
+  };
+
+  const handleActivityClose = () => {
+    setIsActivitySidebarOpen(false);
+  };
+
+  const handleSearchToggle = () => {
+    setIsSearchModalOpen(true);
+  };
+
+  const handleSearchClose = () => {
+    setIsSearchModalOpen(false);
+  };
+
   return (
     <div className="bg-gray-900 min-h-screen flex overflow-hidden">
       {/* Desktop Left Sidebar Navigation */}
-      <SidebarNavigation />
+      <SidebarNavigation 
+        onActivityClick={handleActivityToggle} 
+        isActivityOpen={isActivitySidebarOpen}
+        onSearchClick={handleSearchToggle}
+      />
       
       {/* Mobile Bottom Menu */}
       <MobileBottomMenu isOpen={isMobileBottomMenuOpen} onClose={closeMobileBottomMenu} />
@@ -32,7 +56,7 @@ export default function HomePage() {
       <div className="flex-1 
         ml-0 md:ml-16 lg:ml-64 
         mr-0 lg:mr-80 
-        flex flex-col h-screen responsive-transition">
+        flex flex-col h-screen responsive-transition relative">
         
         {/* Fixed Top Navigation */}
         <TopNavigation onMobileMenuToggle={toggleMobileBottomMenu} />
@@ -51,6 +75,18 @@ export default function HomePage() {
 
       {/* Bottom Navigation Bar */}
       <BottomNavigationBar />
+
+      {/* Activity Sidebar - Slides in from right */}
+      <ActivitySidebar 
+        isOpen={isActivitySidebarOpen}
+        onClose={handleActivityClose}
+      />
+
+      {/* Search Modal */}
+      <SearchModal 
+        isOpen={isSearchModalOpen} 
+        onClose={handleSearchClose} 
+      />
 
     </div>
   );

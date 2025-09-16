@@ -1,9 +1,15 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
-export default function SidebarNavigation() {
+interface SidebarNavigationProps {
+  onActivityClick?: () => void;
+  isActivityOpen?: boolean;
+  onSearchClick?: () => void;
+}
+
+export default function SidebarNavigation({ onActivityClick, isActivityOpen, onSearchClick }: SidebarNavigationProps) {
   const [activeNav, setActiveNav] = useState('home');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isAppearanceOpen, setIsAppearanceOpen] = useState(false);
@@ -11,6 +17,19 @@ export default function SidebarNavigation() {
   const profileRef = useRef<HTMLDivElement>(null);
   const appearanceRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Update active navigation based on current route
+  useEffect(() => {
+    if (pathname === '/home') {
+      setActiveNav('home');
+    } else if (pathname === '/chat') {
+      setActiveNav('chat');
+    } else if (pathname === '/publish') {
+      setActiveNav('dashboard'); // or create a 'publish' nav item if needed
+    }
+    // Add more route mappings as needed
+  }, [pathname]);
 
   // Close profile popup when clicking outside
   useEffect(() => {
@@ -100,9 +119,30 @@ export default function SidebarNavigation() {
           {navigationItems.map((item) => (
             <li key={item.id}>
               <button
-                onClick={() => setActiveNav(item.id)}
+                onClick={() => {
+                  // Handle navigation
+                  if (item.id === 'chat') {
+                    setActiveNav(item.id);
+                    router.push('/chat');
+                  } else if (item.id === 'home') {
+                    setActiveNav(item.id);
+                    router.push('/home');
+                  } else if (item.id === 'dashboard') {
+                    setActiveNav(item.id);
+                    router.push('/dashboard');
+                  } else if (item.id === 'activity' && onActivityClick) {
+                    // Don't set activeNav for activity - it should be based on route only
+                    onActivityClick();
+                  } else if (item.id === 'search' && onSearchClick) {
+                    // Don't set activeNav for search - it opens a modal
+                    onSearchClick();
+                  } else {
+                    setActiveNav(item.id);
+                  }
+                  // Add more navigation cases as needed
+                }}
                 className={`w-full flex items-center space-x-3 md:justify-center lg:justify-start md:space-x-0 lg:space-x-3 px-4 md:px-2 lg:px-4 py-3 rounded-lg text-left md:text-center lg:text-left transition-all duration-200 cursor-pointer group relative ${
-                  activeNav === item.id
+                  (item.id === 'activity' && isActivityOpen) || (item.id !== 'activity' && activeNav === item.id)
                     ? 'bg-gray-800 text-white'
                     : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                 }`}
