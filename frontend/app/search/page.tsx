@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import SidebarNavigation from '../home/components/SidebarNavigation';
-import SearchModal from '../components/SearchModal';
-import ActivitySidebar from '../components/ActivitySidebar';
+import DashboardLayout from '../components/DashboardLayout';
 import { SearchIcon, EyeIcon, ThumbUpIcon, ChatIcon, UserGroupIcon } from '@heroicons/react/outline';
 
 const filterTabs = [
@@ -80,8 +78,6 @@ const mockSearchResults = [
 export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('top');
-  const [isActivitySidebarOpen, setIsActivitySidebarOpen] = useState(false);
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [filteredResults, setFilteredResults] = useState(mockSearchResults);
   
   const router = useRouter();
@@ -121,22 +117,6 @@ export default function SearchPage() {
   const handleFilterChange = (filterId: string) => {
     setActiveFilter(filterId);
     router.push(`/search?q=${encodeURIComponent(query)}&filter=${filterId}`);
-  };
-
-  const handleActivityToggle = () => {
-    setIsActivitySidebarOpen(!isActivitySidebarOpen);
-  };
-
-  const handleActivityClose = () => {
-    setIsActivitySidebarOpen(false);
-  };
-
-  const handleSearchToggle = () => {
-    setIsSearchModalOpen(true);
-  };
-
-  const handleSearchClose = () => {
-    setIsSearchModalOpen(false);
   };
 
   const renderSearchResult = (result: any) => {
@@ -236,31 +216,10 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="bg-gray-900 min-h-screen flex overflow-hidden">
-      {/* Desktop Left Sidebar Navigation */}
-      <SidebarNavigation 
-        onActivityClick={handleActivityToggle} 
-        isActivityOpen={isActivitySidebarOpen}
-        onSearchClick={handleSearchToggle}
-      />
-      
-      {/* Activity Sidebar */}
-      <ActivitySidebar 
-        isOpen={isActivitySidebarOpen} 
-        onClose={handleActivityClose} 
-      />
-      
-      {/* Search Modal */}
-      <SearchModal 
-        isOpen={isSearchModalOpen} 
-        onClose={handleSearchClose} 
-      />
-      
-      {/* Main Content Area */}
-      <div className="flex-1 ml-0 md:ml-16 lg:ml-64 flex flex-col h-screen">
-        {/* Main Content */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-4 md:p-6 lg:p-8">
+    <DashboardLayout>
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-4 md:p-6 lg:p-8">
             
             {/* Header */}
             <div className="mb-8">
@@ -327,7 +286,6 @@ export default function SearchPage() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </DashboardLayout>
   );
 }

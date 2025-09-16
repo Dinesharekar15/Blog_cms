@@ -25,6 +25,10 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
       setActiveNav('home');
     } else if (pathname === '/chat') {
       setActiveNav('chat');
+    } else if (pathname === '/dashboard') {
+      setActiveNav('dashboard');
+    } else if (pathname === '/search') {
+      setActiveNav('search');
     } else if (pathname === '/publish') {
       setActiveNav('dashboard'); // or create a 'publish' nav item if needed
     }

@@ -1,9 +1,7 @@
 'use client'
 
 import { useState } from 'react';
-import SidebarNavigation from '../home/components/SidebarNavigation';
-import ActivitySidebar from '../components/ActivitySidebar';
-import SearchModal from '../components/SearchModal';
+import DashboardLayout from '../components/DashboardLayout';
 import { 
   EyeIcon, 
   UserGroupIcon, 
@@ -89,50 +87,11 @@ const recentActivity = [
 export default function DashboardPage() {
   const [selectedDateRange, setSelectedDateRange] = useState('Last 30 Days');
   const [isDateDropdownOpen, setIsDateDropdownOpen] = useState(false);
-  const [isActivitySidebarOpen, setIsActivitySidebarOpen] = useState(false);
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   const dateRanges = ['Today', 'Last 7 Days', 'Last 30 Days', 'All Time'];
 
-  const handleActivityToggle = () => {
-    setIsActivitySidebarOpen(!isActivitySidebarOpen);
-  };
-
-  const handleActivityClose = () => {
-    setIsActivitySidebarOpen(false);
-  };
-
-  const handleSearchToggle = () => {
-    setIsSearchModalOpen(true);
-  };
-
-  const handleSearchClose = () => {
-    setIsSearchModalOpen(false);
-  };
-
   return (
-    <div className="bg-gray-900 min-h-screen flex overflow-hidden">
-      {/* Desktop Left Sidebar Navigation */}
-      <SidebarNavigation 
-        onActivityClick={handleActivityToggle} 
-        isActivityOpen={isActivitySidebarOpen}
-        onSearchClick={handleSearchToggle}
-      />
-      
-      {/* Activity Sidebar */}
-      <ActivitySidebar 
-        isOpen={isActivitySidebarOpen} 
-        onClose={handleActivityClose} 
-      />
-      
-      {/* Search Modal */}
-      <SearchModal 
-        isOpen={isSearchModalOpen} 
-        onClose={handleSearchClose} 
-      />
-      
-      {/* Main Content Area */}
-      <div className="flex-1 ml-0 md:ml-16 lg:ml-64 flex flex-col h-screen">
+    <DashboardLayout>
         
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto">
@@ -422,7 +381,6 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </DashboardLayout>
   );
 }

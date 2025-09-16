@@ -1,11 +1,9 @@
 'use client'
 
 import { useState } from 'react';
-import SidebarNavigation from '../home/components/SidebarNavigation';
+import DashboardLayout from '../components/DashboardLayout';
 import ChatSidebar from './components/ChatSidebar';
 import MainChatWindow from './components/MainChatWindow';
-import ActivitySidebar from '../components/ActivitySidebar';
-import SearchModal from '../components/SearchModal';
 
 interface Chat {
   id: string;
@@ -24,8 +22,6 @@ interface Chat {
 export default function ChatPage() {
   const [selectedChatId, setSelectedChatId] = useState<string>('1');
   const [isMobileViewOpen, setIsMobileViewOpen] = useState(false);
-  const [isActivitySidebarOpen, setIsActivitySidebarOpen] = useState(false);
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   // Mock chat data
   const chats: Chat[] = [
@@ -104,33 +100,10 @@ export default function ChatPage() {
     setIsMobileViewOpen(false);
   };
 
-  const handleActivityToggle = () => {
-    setIsActivitySidebarOpen(!isActivitySidebarOpen);
-  };
-
-  const handleActivityClose = () => {
-    setIsActivitySidebarOpen(false);
-  };
-
-  const handleSearchToggle = () => {
-    setIsSearchModalOpen(true);
-  };
-
-  const handleSearchClose = () => {
-    setIsSearchModalOpen(false);
-  };
-
   return (
-    <div className="bg-gray-900 min-h-screen flex overflow-hidden relative">
-      {/* Desktop Left Sidebar Navigation */}
-      <SidebarNavigation 
-        onActivityClick={handleActivityToggle} 
-        isActivityOpen={isActivitySidebarOpen}
-        onSearchClick={handleSearchToggle}
-      />
-      
+    <DashboardLayout>
       {/* Chat Layout Container */}
-      <div className="flex-1 ml-0 md:ml-16 lg:ml-64 flex h-screen relative">
+      <div className="flex-1 flex h-screen relative">
         
         {/* Left Chat List - Hidden on mobile when chat is open */}
         <div className={`w-full md:w-80 lg:w-96 bg-gray-800 border-r border-gray-700 flex-shrink-0 ${
@@ -155,18 +128,6 @@ export default function ChatPage() {
         </div>
 
       </div>
-
-      {/* Activity Sidebar */}
-      <ActivitySidebar 
-        isOpen={isActivitySidebarOpen}
-        onClose={handleActivityClose}
-      />
-
-      {/* Search Modal */}
-      <SearchModal 
-        isOpen={isSearchModalOpen} 
-        onClose={handleSearchClose} 
-      />
-    </div>
+    </DashboardLayout>
   );
 }
