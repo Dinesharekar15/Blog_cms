@@ -26,7 +26,7 @@ export default function FeatureSection() {
                 />
               </div>
             </div>
-          </div>
+          </div> 
 
           {/* Mobile: Content Second, Desktop: Right Content Area */}
           <div className="w-full lg:flex-1 max-w-lg lg:max-w-xl text-center lg:text-left order-2 lg:order-none">

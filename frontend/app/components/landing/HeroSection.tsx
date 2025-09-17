@@ -85,16 +85,8 @@ export default function HeroSection() {
                 </div>
               </div>
               
-              {/* Bottom Floating Element - Hidden on Mobile */}
-              <div className="hidden lg:block absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-8 rotate-6 hover:rotate-12 transition-transform duration-500 opacity-70">
-                <div className="w-40 h-24 bg-white rounded-2xl shadow-lg border-4 border-gray-600 overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-purple-50 to-pink-50 p-3">
-                    <div className="h-3 bg-purple-200 rounded w-full mb-2"></div>
-                    <div className="h-2 bg-gray-300 rounded w-3/4"></div>
-                    <div className="h-2 bg-gray-300 rounded w-1/2 mt-1"></div>
-                  </div>
-                </div>
-              </div>
+  
+              
             </div>
           </div>
         </div>
