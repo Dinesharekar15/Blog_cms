@@ -1,8 +1,8 @@
 import express from "express";
 import { userPost, userProfile } from "../controllers/user.js";
-import { authmiddelware } from "../middelwares/authmiddelware.js";
+import { authMiddleware } from "../middelwares/authmiddelware.js";
 const router = express.Router();
-router.get("/profile", authmiddelware, userProfile);
-router.get('/post', authmiddelware, userPost);
+router.get("/profile", authMiddleware, userProfile);
+router.get('/post', authMiddleware, userPost);
 export default router;
 //# sourceMappingURL=userRoutes.js.map

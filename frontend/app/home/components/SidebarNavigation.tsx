@@ -52,11 +52,10 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
 
   const navigationItems = [
     { id: 'home', label: 'Home', icon: '🏠' },
-    { id: 'subscriptions', label: 'Subscriptions', icon: '📚' },
     { id: 'chat', label: 'Chat', icon: '💬' },
     { id: 'activity', label: 'Activity', icon: '📊' },
     { id: 'search', label: 'Search', icon: '🔍' },
-    { id: 'dashboard', label: 'Dashboard', icon: '📈' }
+    
   ];
 
   const profileMenuItems = [

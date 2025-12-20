@@ -2,7 +2,6 @@ interface BlogContent {
     title: string;
     description: string;
     imageUrl: string | null;
-    videoUrl: string | null;
     userId: number;
 }
 declare const creatPost: import("express").RequestHandler<{}, any, BlogContent, import("qs").ParsedQs, Record<string, any>>;

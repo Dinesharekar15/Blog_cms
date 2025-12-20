@@ -3,7 +3,6 @@
 import { useState, ReactNode } from 'react';
 import SidebarNavigation from '../home/components/SidebarNavigation';
 import TopNavigation from '../home/components/TopNavigation';
-import RightSidebar from '../home/components/RightSidebar';
 import MobileBottomMenu from '../home/components/MobileBottomMenu';
 import MobileFAB from '../home/components/MobileFAB';
 import BottomNavigationBar from '../home/components/BottomNavigationBar';
@@ -74,16 +73,13 @@ export default function HomeLayout({ children }: HomeLayoutProps) {
         flex flex-col h-screen responsive-transition relative">
         
         {/* Fixed Top Navigation */}
-        <TopNavigation onMobileMenuToggle={toggleMobileBottomMenu} />
+        {/* <TopNavigation onMobileMenuToggle={toggleMobileBottomMenu} /> */}
         
         {/* Content */}
         {children}
       </div>
 
-      {/* Desktop Right Sidebar */}
-      <div className="fixed right-0 top-0 z-30 hidden lg:block">
-        <RightSidebar />
-      </div>
+      
 
       {/* Mobile FAB */}
       <MobileFAB />

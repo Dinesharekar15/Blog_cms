@@ -8,7 +8,7 @@ interface CustomRequest extends Request {
 }
 
 
-const authmiddelware=asyncHandler(async(req:CustomRequest,res:Response,next:NextFunction)=>{
+const authMiddleware =asyncHandler(async(req:CustomRequest,res:Response,next:NextFunction)=>{
     const token =req.cookies.auth_token;
     if (!token) {
      res.status(401).json({ message: 'No token, authorization denied' });
@@ -26,4 +26,4 @@ const authmiddelware=asyncHandler(async(req:CustomRequest,res:Response,next:Next
 
 })
 
-export{authmiddelware}
+export{authMiddleware }

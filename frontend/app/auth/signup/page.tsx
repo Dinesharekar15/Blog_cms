@@ -6,7 +6,6 @@ import PageLayout from "../../components/ui/PageLayout";
 import FormCard from "../../components/ui/FormCard";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
-import PasswordRequirements from "../../components/ui/PasswordRequirements";
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
