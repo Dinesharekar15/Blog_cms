@@ -15,6 +15,7 @@ const signUp = asyncHandler(
     async (req: Request<{}, {}, SignUpBody>, res: Response) => {
     try {
       const { email, name, password } = req.body;
+      console.log(req.body)
       if (!name || !email || !password) {
         res.status(400).json({ msg: "All Fieds are required" });
         return;
@@ -58,7 +59,7 @@ const signUp = asyncHandler(
             id:user.id,
             name:user.name,
             email:user.email
-        },
+        },msg:"New User Created"
       });
     } catch (error) {
         console.log(error)
@@ -109,7 +110,7 @@ const signIn = asyncHandler(
         secure: process.env.NODE_ENV === "production",
         maxAge: 60 * 60 * 1000,
     });
-    res.status(201).json({ msg: "login succefully" ,
+    res.status(201).json({ msg: "Login Succefully " ,
         user:{
             id:user.id,
             name:user.name,

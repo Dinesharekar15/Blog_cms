@@ -31,7 +31,7 @@ const creatBlog = asyncHandler(
         {
           folder:"blogs"
         })
-        imageUrl=result.secure_url
+        imageUrl=result.public_id
       }
       const blog = await prisma.blog.create({
         data: {
@@ -56,4 +56,27 @@ const creatBlog = asyncHandler(
   }
 );
 
-export { creatBlog };
+const allBlogs=asyncHandler(async(req:CustomRequest,res:Response)=>{
+  console.log("Dinehs Arekar ")
+  
+  try {
+    const blogs=await prisma.blog.findMany({
+      include:{
+        user:{
+          select:{
+            name:true,
+            email:true
+          }
+        }
+      }
+    })
+    res.status(200).json({msg:"All Bogs ",blogs})
+    return
+  } catch (error:any) {
+    console.log(error.msg)
+    res.status(500).json({msg:"Internal server error"})
+    return
+  }
+})
+
+export { creatBlog,allBlogs };

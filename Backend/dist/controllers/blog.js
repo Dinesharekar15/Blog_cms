@@ -18,7 +18,7 @@ const creatBlog = asyncHandler(async (req, res) => {
             const result = await cloudinary.uploader.upload(`data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`, {
                 folder: "blogs"
             });
-            imageUrl = result.secure_url;
+            imageUrl = result.public_id;
         }
         const blog = await prisma.blog.create({
             data: {
@@ -42,5 +42,27 @@ const creatBlog = asyncHandler(async (req, res) => {
         return;
     }
 });
-export { creatBlog };
+const allBlogs = asyncHandler(async (req, res) => {
+    console.log("Dinehs Arekar ");
+    try {
+        const blogs = await prisma.blog.findMany({
+            include: {
+                user: {
+                    select: {
+                        name: true,
+                        email: true
+                    }
+                }
+            }
+        });
+        res.status(200).json({ msg: "All Bogs ", blogs });
+        return;
+    }
+    catch (error) {
+        console.log(error.msg);
+        res.status(500).json({ msg: "Internal server error" });
+        return;
+    }
+});
+export { creatBlog, allBlogs };
 //# sourceMappingURL=blog.js.map

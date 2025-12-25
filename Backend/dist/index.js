@@ -7,10 +7,13 @@ import cookieParser from 'cookie-parser';
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:3000",
+    credentials: true
+}));
 app.use('/api/v1/auth', authRoutes);
 app.use("/api/v1/user", userRoutes);
-app.use('/api/v1/publish', postRoutes);
+app.use('/api/v1/blog', postRoutes);
 app.get('/', async (req, res) => {
     res.status(200).json({ mag: "dinesh" });
 });

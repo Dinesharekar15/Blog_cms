@@ -7,12 +7,19 @@ import FormCard from '../../components/ui/FormCard';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import SocialButton from '../../components/ui/SocialButton';
+import axios from 'axios';
+import { emitWarning } from 'process';
+import { useRouter } from 'next/navigation';
 
 export default function SignInPage() {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
+  const router=useRouter()
+  const [loading,setLoading]=useState(false)
+  const backend_url=process.env.NEXT_PUBLIC_BACKEND_URL;
+  const initialformData={
+    email:'',
+    password:''
+  }
+  const [formData, setFormData] = useState(initialformData);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -22,9 +29,28 @@ export default function SignInPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Sign in submitted:', formData);
+    setLoading(true)
+    const data={
+        email:formData.email,
+        password:formData.password
+      }
+    try {
+      const response=await axios.post(`${backend_url}/auth/signin`,data,{withCredentials:true}
+    )
+      console.log(response.data.msg)
+      if(response.status==201){
+        alert(response.data.msg)
+        router.push("/home")
+        router.refresh();
+      }
+      setFormData(initialformData)
+    } catch (error:any) {
+      console.log(error.response.data)
+    }finally{
+      setLoading(false)
+    }
   };
 
   const handleSocialSignIn = (provider: string) => {
@@ -85,8 +111,8 @@ export default function SignInPage() {
             </div>
           </div>
 
-          <Button type="submit" variant="primary" className="w-full">
-            Sign In
+          <Button type="submit" variant="primary" className="w-full" disabled={loading}>
+            {loading?"Loading...":"Sign In"}
           </Button>
         </form>
       </FormCard>

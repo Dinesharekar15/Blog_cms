@@ -1,14 +1,18 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, use } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import axios from 'axios';
 
 interface SidebarNavigationProps {
   onActivityClick?: () => void;
   isActivityOpen?: boolean;
   onSearchClick?: () => void;
 }
-
+type  user={
+  name:string,
+  email:string,
+}
 export default function SidebarNavigation({ onActivityClick, isActivityOpen, onSearchClick }: SidebarNavigationProps) {
   const [activeNav, setActiveNav] = useState('home');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -18,7 +22,7 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
   const appearanceRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-
+  const [user,setUser]= useState<user|null>(null);
   // Update active navigation based on current route
   useEffect(() => {
     if (pathname === '/home') {
@@ -103,7 +107,25 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
     console.log(`Theme changed to: ${theme}`);
     // Don't close the dropdown - let user click "Appearance" to close it
   };
+  const backend_url=process.env.NEXT_PUBLIC_BACKEND_URL;
+  useEffect(()=>{
+    
+      
+      const getProfile=async()=>{
+        try {
+          
+          const responces=await axios.get(`${backend_url}/user/profile`,{withCredentials:true})
+          setUser(responces.data.user)
+          console.log("User:",responces.data)
+        } catch (error:any) {
+                console.log(error.responces.error)
 
+        }
+      }
+      getProfile()
+   
+    
+  },[])
   return (
     <div className="bg-gray-900 text-white w-64 md:w-16 lg:w-64 h-screen flex-col fixed left-0 top-0 z-40 hidden md:flex">
       {/* Logo Section */}
@@ -187,11 +209,11 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
           title="Profile"
         >
           <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
-            <span className="text-white font-semibold">JD</span>
+            <span className="text-white font-semibold">  {user?.name.charAt(0).toUpperCase()||""}</span>
           </div>
           <div className="flex-1 min-w-0 text-left md:hidden lg:block">
-            <p className="text-sm font-medium text-white truncate">John Doe</p>
-            <p className="text-xs text-gray-400 truncate">john.doe@example.com</p>
+            <p className="text-sm font-medium text-white truncate">{user?.name}</p>
+            <p className="text-xs text-gray-400 truncate">{user?.email}</p>
           </div>
           <div className={`text-gray-400 transition-transform duration-200 md:hidden lg:block ${isProfileOpen ? 'rotate-180' : ''}`}>
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -211,10 +233,10 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
             <div className="p-4 border-b border-gray-700">
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">JD</span>
+                  <span className="text-white font-bold text-lg">{user?.name.charAt(0).toUpperCase()}</span>
                 </div>
                 <div className="flex-1">
-                  <p className="text-white font-semibold">John Doe</p>
+                  <p className="text-white font-semibold">{user?.name}</p>
                   <button 
                     className="text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 cursor-pointer"
                     onClick={() => handleProfileMenuClick('view-profile')}

@@ -1,18 +1,23 @@
 "use client";
-
+import axios from 'axios'
 import { useState } from "react";
 import Link from "next/link";
 import PageLayout from "../../components/ui/PageLayout";
 import FormCard from "../../components/ui/FormCard";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
+import { redirect } from 'next/dist/server/api-utils';
+import { useRouter } from 'next/navigation';
 
 export default function SignUpPage() {
-  const [formData, setFormData] = useState({
-    name: "",
+  const router=useRouter();
+  const[loading,setLoading]=useState(false)
+  const initialfromData={
+     name: "",
     email: "",
     password: "",
-  });
+  }
+  const [formData, setFormData] = useState(initialfromData);
   const [passwordFocus, setPasswordFocus] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,10 +27,34 @@ export default function SignUpPage() {
       [name]: value,
     }));
   };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const backend_url=process.env.NEXT_PUBLIC_BACKEND_URL;
+  
+  const handleSubmit =async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     console.log("Form submitted:", formData);
+    try {
+      const response = await axios.post(`${backend_url}/auth/signup`,{
+        name:formData.name,
+        email:formData.email,
+        password:formData.password
+    },{
+      withCredentials:true
+    })
+    if(response.status==201){
+      alert(response.data.msg)
+      router.push('/home')    
+      setFormData(initialfromData)
+
+    }
+    
+    } catch (error:any) {
+      console.log(error.response.data)
+
+    }finally{
+      setLoading(false)
+      
+    }
   };
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -82,8 +111,9 @@ export default function SignUpPage() {
             )}
           </div>
 
-          <Button type="submit" variant="primary" className="w-full">
-            Verify and Sign up
+          <Button type="submit" variant="primary" className="w-full" disabled={loading}>
+            {loading?"Loafing...":"Verify and Sign up"}
+           
           </Button>
 
           <p className="text-xs text-gray-500 text-center leading-relaxed">
