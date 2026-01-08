@@ -12,9 +12,11 @@ const creatBlog = asyncHandler(async (req, res) => {
         res.status(401).json({ message: "Unauthorized" });
         return;
     }
+    // console.log("title:",title,"description:",description)
     try {
         let imageUrl = null;
         if (req.file) {
+            // console.log('yes')
             const result = await cloudinary.uploader.upload(`data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`, {
                 folder: "blogs"
             });

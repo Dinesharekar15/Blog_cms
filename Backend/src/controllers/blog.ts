@@ -19,14 +19,17 @@ const creatBlog = asyncHandler(
       res.status(500).json({ msg: "Title is required" });
       return;
     }
+    
     const userId = req.user?.id;
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });
       return;
     }
+    // console.log("title:",title,"description:",description)
     try {
       let imageUrl:string|null=null;
       if(req.file){
+        // console.log('yes')
         const result=await cloudinary.uploader.upload(`data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
         {
           folder:"blogs"

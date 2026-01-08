@@ -8,7 +8,7 @@ interface CustomRequest extends Request {
 }
 
 
-const authMiddleware =asyncHandler(async(req:CustomRequest,res:Response,next:NextFunction)=>{
+const isUserAuthenticated =asyncHandler(async(req:CustomRequest,res:Response,next:NextFunction)=>{
     const token =req.cookies.auth_token;
     if (!token) {
      res.status(401).json({ message: 'No token, authorization denied' });
@@ -26,4 +26,4 @@ const authMiddleware =asyncHandler(async(req:CustomRequest,res:Response,next:Nex
 
 })
 
-export{authMiddleware }
+export{isUserAuthenticated }

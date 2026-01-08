@@ -1,1 +1,1 @@
-{"version":3,"file":"authmiddelware.d.ts","sourceRoot":"","sources":["../../src/middelwares/authmiddelware.ts"],"names":[],"mappings":"AAUA,QAAA,MAAM,cAAc,8IAgBlB,CAAA;AAEF,OAAM,EAAC,cAAc,EAAE,CAAA"}
+{"version":3,"file":"authmiddelware.d.ts","sourceRoot":"","sources":["../../src/middelwares/authmiddelware.ts"],"names":[],"mappings":"AAUA,QAAA,MAAM,mBAAmB,8IAgBvB,CAAA;AAEF,OAAM,EAAC,mBAAmB,EAAE,CAAA"}

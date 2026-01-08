@@ -1,8 +1,8 @@
 import express from "express"
 import { userPost, userProfile } from "../controllers/user.js"
-import { authMiddleware } from "../middelwares/authmiddelware.js"
+import { isUserAuthenticated } from "../middelwares/authmiddelware.js"
 const router=express.Router()
 
-router.get("/profile",authMiddleware,userProfile)
-router.get('/blogs',authMiddleware,userPost)
+router.get("/profile",isUserAuthenticated,userProfile)
+router.get('/blogs',isUserAuthenticated,userPost)
 export default router

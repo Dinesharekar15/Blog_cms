@@ -9,6 +9,7 @@ import Underline from '@tiptap/extension-underline';
 import Link from '@tiptap/extension-link';
 
 import TiptapToolbar from './TiptapToolbar';
+import { ImageUpIcon } from 'lucide-react';
 
 interface TiptapEditorProps {
   content: string;
@@ -16,7 +17,8 @@ interface TiptapEditorProps {
 }
 
 const TiptapEditor = ({ content, onChange }: TiptapEditorProps) => {
-  const editor = useEditor({
+
+  const editor = useEditor({  
     immediatelyRender: false,
     extensions: [
       StarterKit.configure({
@@ -87,6 +89,7 @@ const TiptapEditor = ({ content, onChange }: TiptapEditorProps) => {
           </span>
         </div>
       </div>
+      
     </div>
   );
 };

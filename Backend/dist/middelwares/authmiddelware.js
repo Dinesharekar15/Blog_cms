@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import asyncHandler from 'express-async-handler';
-const authMiddleware = asyncHandler(async (req, res, next) => {
+const isUserAuthenticated = asyncHandler(async (req, res, next) => {
     const token = req.cookies.auth_token;
     if (!token) {
         res.status(401).json({ message: 'No token, authorization denied' });
@@ -17,5 +17,5 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
         return;
     }
 });
-export { authMiddleware };
+export { isUserAuthenticated };
 //# sourceMappingURL=authmiddelware.js.map

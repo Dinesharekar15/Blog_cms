@@ -102,24 +102,29 @@ export default function MainContentFeed() {
               {/* Content */}
               <div className="mb-4">
                 <h2 className="text-white font-bold text-xl mb-2 leading-tight">{post.title}</h2>
-                <p className="text-gray-300 text-sm leading-relaxed mb-4">{post.description}</p>
+                <div className="text-gray-300 text-sm leading-relaxed mb-4" dangerouslySetInnerHTML={{ __html: post.description }}/>
                 
                 {/* Content Image/Media */}
-                <div className="w-full h-48 bg-gray-700 rounded-lg flex items-center justify-center mb-4">
-                   <CldImage
+                
+                  {
+                    post.imageUrl &&
+                    <div className="w-full h-48 bg-gray-700 rounded-lg flex items-center justify-center mb-4">
+                    <CldImage
                     src={post.imageUrl}
                     width={800}
                     height={300}
                     crop="fill"
-                      gravity="center"
-
+                      gravity="center" 
                     alt={post.title}
                     className="rounded-lg"
                   />
+                  </div>
+                  }
+                   
                 </div>
 
                 
-              </div>
+              
 
               {/* Engagement Actions */}
               <div className="flex items-center justify-between pt-4 border-t border-none">
