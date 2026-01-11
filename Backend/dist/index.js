@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors"; // Import the cors package
 import authRoutes from "./routes/authRoutes.js";
-import postRoutes from "./routes/blogRoutes.js";
+import blogRoutes from "./routes/blogRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import cookieParser from 'cookie-parser';
 const app = express();
@@ -13,7 +13,7 @@ app.use(cors({
 }));
 app.use('/api/v1/auth', authRoutes);
 app.use("/api/v1/user", userRoutes);
-app.use('/api/v1/blog', postRoutes);
+app.use('/api/v1/blog', blogRoutes);
 app.get('/', async (req, res) => {
     res.status(200).json({ mag: "dinesh" });
 });

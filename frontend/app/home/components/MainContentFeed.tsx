@@ -39,7 +39,7 @@ export default function MainContentFeed() {
         shares: 12,
         saves: 89
       },
-      isSubscribed: false,
+      isSubscribed: true,
       publishedAt: "2 hours ago"
     }
   const backend_url=process.env.NEXT_PUBLIC_BACKEND_URL
@@ -48,7 +48,7 @@ export default function MainContentFeed() {
       const getblogs=async()=>{
         const response=await axios.get(`${backend_url}/blog`,{withCredentials:true})
         console.log("responces:",response.data.blogs)
-        setBlogs(response.data.blogs)
+        setBlogs(response.data.formattedBlog)
       }
 
       getblogs();
@@ -94,8 +94,9 @@ export default function MainContentFeed() {
                       ? 'bg-gray-600 text-gray-300 hover:bg-gray-500'
                       : 'bg-orange-500 text-white hover:bg-orange-600'
                   }`}
+                  
                 >
-                  {blog.isSubscribed ? 'Subscribed' : 'Subscribe'}
+                  {blog.isSubscribed ? 'Followed' : 'Follow'}
                 </button>
               </div>
 
@@ -133,7 +134,7 @@ export default function MainContentFeed() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
-                    <span className="text-sm">{blog.engagement.likes}</span>
+                    <span className="text-sm">{post.like}</span>
                   </button>
                   
                   <button className="flex items-center space-x-2 text-gray-400 hover:text-blue-500 transition-colors duration-200">

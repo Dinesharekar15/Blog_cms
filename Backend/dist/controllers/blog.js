@@ -45,7 +45,7 @@ const creatBlog = asyncHandler(async (req, res) => {
     }
 });
 const allBlogs = asyncHandler(async (req, res) => {
-    console.log("Dinehs Arekar ");
+    const userId = Number(req.user?.id);
     try {
         const blogs = await prisma.blog.findMany({
             include: {
@@ -54,10 +54,18 @@ const allBlogs = asyncHandler(async (req, res) => {
                         name: true,
                         email: true
                     }
-                }
+                },
+                _count: { select: { like: true, comment: true } },
+                like: userId ? { where: { userId } } : false
             }
         });
-        res.status(200).json({ msg: "All Bogs ", blogs });
+        const formattedBlog = blogs.map((blog) => ({
+            ...blog,
+            like: blog._count.like,
+            comment: blog._count.comment,
+            isLiked: blog.like?.length > 0
+        }));
+        res.status(200).json({ msg: "All Bogs ", formattedBlog });
         return;
     }
     catch (error) {
@@ -66,5 +74,66 @@ const allBlogs = asyncHandler(async (req, res) => {
         return;
     }
 });
-export { creatBlog, allBlogs };
+const likeBlog = async (req, res) => {
+    const blogId = Number(req.params.blogId);
+    const userId = Number(req.user?.id);
+    try {
+        const blog = await prisma.like.findMany({
+            where: {
+                userId,
+                blogId
+            }
+        });
+        if (blog.length > 0) {
+            res.status(400).json({ msg: "Post allready liked" });
+            return;
+        }
+        await prisma.like.create({
+            data: {
+                userId,
+                blogId
+            }
+        });
+        const likecounts = await prisma.like.count({
+            where: {
+                blogId
+            }
+        });
+        res.status(200).json({
+            msg: "Blog Liked",
+            likecounts
+        });
+    }
+    catch (error) {
+        console.log(error.msg);
+        res.status(500).json({ msg: "Like failed" });
+        return;
+    }
+};
+const addComment = async (req, res) => {
+    const userId = Number(req.user?.id);
+    const blogId = Number(req.params.blogId);
+    const { content, parentId } = req.body;
+    try {
+        const comment = await prisma.comment.create({
+            data: {
+                content,
+                userId,
+                blogId,
+                parentId: parentId || null
+            },
+            include: {
+                user: {
+                    select: { id: true, name: true }
+                }
+            }
+        });
+        res.status(201).json({ msg: "Comment Added", comment: comment });
+    }
+    catch (error) {
+        console.log(error.msg);
+        res.status(500).json({ msg: "Fail to add comment" });
+    }
+};
+export { creatBlog, allBlogs, likeBlog, addComment };
 //# sourceMappingURL=blog.js.map
