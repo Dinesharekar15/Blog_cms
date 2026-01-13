@@ -10,6 +10,8 @@ interface CustomRequest extends Request {
 declare const creatBlog: import("express").RequestHandler<import("express-serve-static-core").ParamsDictionary, any, any, import("qs").ParsedQs, Record<string, any>>;
 declare const allBlogs: import("express").RequestHandler<import("express-serve-static-core").ParamsDictionary, any, any, import("qs").ParsedQs, Record<string, any>>;
 declare const likeBlog: (req: CustomRequest, res: Response) => Promise<void>;
+declare const unlikeBlog: (req: CustomRequest, res: Response) => Promise<void>;
 declare const addComment: (req: CustomRequest, res: Response) => Promise<void>;
-export { creatBlog, allBlogs, likeBlog, addComment };
+declare const allComment: (req: CustomRequest, res: Response) => Promise<void>;
+export { creatBlog, allBlogs, likeBlog, addComment, unlikeBlog, allComment };
 //# sourceMappingURL=blog.d.ts.map

@@ -72,6 +72,9 @@ const allBlogs=asyncHandler(async(req:CustomRequest,res:Response)=>{
         },
         _count:{select:{like:true,comment:true}},
         like:userId?{where:{userId}}:false
+      },
+      orderBy: {
+        createdAt: "desc",
       }
     })
     const formattedBlog=blogs.map((blog)=>({
@@ -125,6 +128,23 @@ const likeBlog=async(req:CustomRequest,res:Response)=>{
   }
 }
 
+const unlikeBlog=async(req:CustomRequest,res:Response)=>{
+  const userId=Number(req.user?.id);
+  const blogId=Number(req.params.blogId)
+  try {
+    await prisma.like.deleteMany({
+      where:{
+        userId,
+        blogId
+      }
+    })
+    res.status(200).json({msg:"Like Removed "})
+  } catch (error:any) {
+    console.log(error.msg)
+    res.status(500).json({msg:"Error :",error})
+  }
+}
+
 const addComment=async(req:CustomRequest,res:Response)=>{
     const userId=Number(req.user?.id)
     const blogId=Number(req.params.blogId)
@@ -150,4 +170,31 @@ const addComment=async(req:CustomRequest,res:Response)=>{
     }
 }
 
-export { creatBlog,allBlogs,likeBlog ,addComment};
+const allComment=async (req:CustomRequest,res:Response)=>{
+  const blogId=Number(req.params.blogId)
+  
+  try {
+    const comments=await prisma.comment.findMany({
+      where:{
+        blogId,
+        parentId:null
+      },
+      include:{
+        user:{select:{id:true,name:true}},
+        replies:{
+          include:{
+            user:{select:{id:true,name:true}}
+          }
+        }
+      },
+      orderBy:{createdAt:"desc"}
+    })
+    
+    res.status(200).json({msg:"GComments fetched",comments})
+  } catch (error:any) {
+    console.log(error)
+    res.status(500).json({msg:"Internal server error"})
+  }
+}
+
+export { creatBlog,allBlogs,likeBlog ,addComment,unlikeBlog,allComment};
