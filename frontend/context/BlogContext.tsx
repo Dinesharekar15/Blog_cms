@@ -4,9 +4,9 @@ import { blogService } from "@/services/BlogService";
 const BlogContext = createContext<any>(null);
 
 export const BlogProvider = async ({
-  childern,
+  children
 }: {
-  childern: React.ReactNode;
+  children: React.ReactNode;
 }) => {
   const [blog, setBlog] = useState([]);
   const [comment, setComment] = useState<Record<number, any[]>>({});
@@ -61,7 +61,7 @@ export const BlogProvider = async ({
         loadcommnet,
       }}
     >
-      {childern}
+      {children}
     </BlogContext.Provider>
   );
 };
