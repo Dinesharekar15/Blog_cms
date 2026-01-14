@@ -18,7 +18,7 @@ const creatBlog = asyncHandler(async (req, res) => {
         if (req.file) {
             // console.log('yes')
             const result = await cloudinary.uploader.upload(`data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`, {
-                folder: "blogs"
+                folder: "blogs",
             });
             imageUrl = result.public_id;
         }
@@ -44,6 +44,7 @@ const creatBlog = asyncHandler(async (req, res) => {
         return;
     }
 });
+//for home page
 const allBlogs = asyncHandler(async (req, res) => {
     const userId = Number(req.user?.id);
     try {
@@ -52,21 +53,21 @@ const allBlogs = asyncHandler(async (req, res) => {
                 user: {
                     select: {
                         name: true,
-                        email: true
-                    }
+                        email: true,
+                    },
                 },
                 _count: { select: { like: true, comment: true } },
-                like: userId ? { where: { userId } } : false
+                like: userId ? { where: { userId } } : false,
             },
             orderBy: {
                 createdAt: "desc",
-            }
+            },
         });
         const formattedBlog = blogs.map((blog) => ({
             ...blog,
             like: blog._count.like,
             comment: blog._count.comment,
-            isLiked: blog.like?.length > 0
+            isLiked: blog.like?.length > 0,
         }));
         res.status(200).json({ msg: "All Bogs ", formattedBlog });
         return;
@@ -77,6 +78,52 @@ const allBlogs = asyncHandler(async (req, res) => {
         return;
     }
 });
+//For BlogDetail page
+const getOneBlog = async (req, res) => {
+    const blogId = Number(req.params.blogId);
+    const userId = Number(req.user?.id);
+    try {
+        const blog = await prisma.blog.findUnique({
+            where: {
+                id: blogId,
+            },
+            include: {
+                user: {
+                    select: { name: true, email: true },
+                },
+                like: userId ? { where: { userId } } : false,
+                _count: { select: { like: true, comment: true } },
+                comment: {
+                    where: { parentId: null },
+                    include: {
+                        user: {
+                            select: { name: true, id: true },
+                        },
+                        replies: {
+                            include: { user: { select: { name: true, id: true } } },
+                        },
+                    },
+                    orderBy: { createdAt: "desc" }
+                },
+            },
+        });
+        if (!blog) {
+            res.status(404).json({ msg: "Blog Not Found" });
+            return;
+        }
+        const response = {
+            ...blog,
+            likeCount: blog._count.like,
+            commentCount: blog._count.comment,
+            isLiked: blog.like?.length > 0
+        };
+        res.status(200).json({ response });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ msg: "Internal Server Error " });
+    }
+};
 const likeBlog = async (req, res) => {
     const blogId = Number(req.params.blogId);
     const userId = Number(req.user?.id);
@@ -84,8 +131,8 @@ const likeBlog = async (req, res) => {
         const blog = await prisma.like.findMany({
             where: {
                 userId,
-                blogId
-            }
+                blogId,
+            },
         });
         if (blog.length > 0) {
             res.status(400).json({ msg: "Post allready liked" });
@@ -94,17 +141,17 @@ const likeBlog = async (req, res) => {
         await prisma.like.create({
             data: {
                 userId,
-                blogId
-            }
+                blogId,
+            },
         });
         const likecounts = await prisma.like.count({
             where: {
-                blogId
-            }
+                blogId,
+            },
         });
         res.status(200).json({
             msg: "Blog Liked",
-            likecounts
+            likecounts,
         });
     }
     catch (error) {
@@ -120,8 +167,8 @@ const unlikeBlog = async (req, res) => {
         await prisma.like.deleteMany({
             where: {
                 userId,
-                blogId
-            }
+                blogId,
+            },
         });
         res.status(200).json({ msg: "Like Removed " });
     }
@@ -140,13 +187,13 @@ const addComment = async (req, res) => {
                 content,
                 userId,
                 blogId,
-                parentId: parentId || null
+                parentId: parentId || null,
             },
             include: {
                 user: {
-                    select: { id: true, name: true }
-                }
-            }
+                    select: { id: true, name: true },
+                },
+            },
         });
         res.status(201).json({ msg: "Comment Added", comment: comment });
     }
@@ -161,17 +208,17 @@ const allComment = async (req, res) => {
         const comments = await prisma.comment.findMany({
             where: {
                 blogId,
-                parentId: null
+                parentId: null,
             },
             include: {
                 user: { select: { id: true, name: true } },
                 replies: {
                     include: {
-                        user: { select: { id: true, name: true } }
-                    }
-                }
+                        user: { select: { id: true, name: true } },
+                    },
+                },
             },
-            orderBy: { createdAt: "desc" }
+            orderBy: { createdAt: "desc" },
         });
         res.status(200).json({ msg: "GComments fetched", comments });
     }
@@ -180,5 +227,5 @@ const allComment = async (req, res) => {
         res.status(500).json({ msg: "Internal server error" });
     }
 };
-export { creatBlog, allBlogs, likeBlog, addComment, unlikeBlog, allComment };
+export { creatBlog, allBlogs, likeBlog, addComment, unlikeBlog, allComment, getOneBlog, };
 //# sourceMappingURL=blog.js.map
