@@ -15,19 +15,24 @@ export interface Blog {
 }
 
 export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
-  const [blog, setBlog] = useState<Blog[]>([]);
-  const [comment, setComment] = useState<Record<number, any[]>>({});
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [comments, setComments] = useState<Record<number, any[]>>({});
   const [loading, setLoading] = useState(false);
 
   const loadBlogs = async () => {
-    setLoading(true);
+    try {
+     setLoading(true);
     const data = await blogService.getAll();
-    setBlog(data.formattedBlog || data);
-    setLoading(false);
+    setBlogs(data.formattedBlog || data);
+    } catch (error) {
+    console.error("Failed to load blogs", error);
+    }finally{
+      setLoading(false)
+    }
   };
 
   const likeBlog = async (blogId: number) => {
-    setBlog((prev) =>
+    setBlogs((prev) =>
       prev.map((b) =>
         b.id === blogId ? { ...b, isLiked: true, like: b.like + 1 } : b
       )
@@ -41,7 +46,7 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
   };
   const unlikeBlog = async (blogId: number) => {
 
-    setBlog((prev) =>
+    setBlogs((prev) =>
       prev.map((b) =>
         b.id === blogId ? { ...b, isLiked: false, like: b.like - 1 } : b
       )
@@ -60,12 +65,12 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
     parentId?: number
   ) => {
     await blogService.addcomment(blogId, content, parentId);
-    loadcommnet(blogId);
+    loadcommnets(blogId);
   };
 
-  const loadcommnet = async (blogId: number) => {
+  const loadcommnets = async (blogId: number) => {
     const data = await blogService.getComment(blogId);
-    setComment((prev) => ({
+    setComments((prev) => ({
       ...prev,
       [blogId]: data.comments,
     }));
@@ -73,18 +78,19 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     loadBlogs();
-  }, []);
+  },[]);
 
   return (
     <BlogContext.Provider
       value={{
-        blog,
-        comment,
+        blogs,
+        comments,
         loading,
         likeBlog,
         unlikeBlog,
         addComment,
-        loadcommnet,
+        loadcommnets,
+        loadBlogs
       }}
     >
       {children}

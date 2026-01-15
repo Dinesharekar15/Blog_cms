@@ -1,7 +1,7 @@
 "use client";
 import { useBlogs } from "@/context/BlogContext";
 import { timeAgo } from "@/lib/timeago";
-
+import Link from "next/link";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { CldImage } from "next-cloudinary";
@@ -20,15 +20,15 @@ type Blog = {
 
 export default function MainContentFeed() {
   const {
-    blog,
+    blogs,
     comment,
     loading,
     likeBlog,
     unlikeBlog,
     addComment,
-    loadcommnet,
+    loadComments,
+    loadBlogs
   } = useBlogs();
-  console.log(blog);
   const post = {
     id: 1,
     author: {
@@ -60,8 +60,9 @@ export default function MainContentFeed() {
     <div className="flex-1 bg-gray-900">
       {/* Scrollable Content Area */}
       <div className="h-screen overflow-y-auto scrollbar-auto-hide">
-        <div className="max-w-2xl mx-auto p-6 space-y-6 pb-24 md:pb-6">
-          {blog.map((blog: any) => (
+        <div className="cursor-pointer max-w-2xl mx-auto p-6 space-y-6 pb-24 md:pb-6">
+          {blogs.map((blog: any) => (
+            <Link key={blog.id} href={`/blog/${blog.id}`}>
             <article
               key={blog.id}
               className="bg-gray-800 rounded-lg border border-gray-700 p-6 hover:border-gray-600 transition-all duration-200"
@@ -74,7 +75,7 @@ export default function MainContentFeed() {
                   </div>
                   <div>
                     <div className="cursor-pointer flex items-center space-x-2">
-                      <h3 className="text-white font-semibold text-sm">
+                      <h3 className="text-white font-semibold text-sm hover:text-blue-400 transition-colors duration-200">
                         {blog.user.name}
                       </h3>
                     </div>
@@ -130,7 +131,7 @@ export default function MainContentFeed() {
                         blog.isLiked ? unlikeBlog(blog.id) : likeBlog(blog.id);
                       }
                     }}
-                    className="flex items-center space-x-2 text-gray-400  transition-colors duration-200 "
+                    className="flex items-center space-x-2 text-gray-400 hover:text-red-500  transition-colors duration-200 "
                   >
                     <svg
                       className={`cursor-pointer w-5 h-5 transition-colors ${
@@ -188,6 +189,7 @@ export default function MainContentFeed() {
                 </div>
               </div>
             </article>
+            </Link>
           ))}
         </div>
       </div>
