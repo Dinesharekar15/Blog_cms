@@ -1,14 +1,21 @@
+"use client";
+
 import { createContext, useState, useEffect, useContext } from "react";
 import { blogService } from "@/services/BlogService";
 
 const BlogContext = createContext<any>(null);
 
-export const BlogProvider = async ({
-  children
-}: {
-  children: React.ReactNode;
-}) => {
-  const [blog, setBlog] = useState([]);
+export interface Blog {
+  id: number;
+  title: string;
+  description: string;
+  imageUrl?: string;
+  like: number;
+  isLiked: boolean;
+}
+
+export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
+  const [blog, setBlog] = useState<Blog[]>([]);
   const [comment, setComment] = useState<Record<number, any[]>>({});
   const [loading, setLoading] = useState(false);
 
@@ -20,12 +27,31 @@ export const BlogProvider = async ({
   };
 
   const likeBlog = async (blogId: number) => {
-    await blogService.likeblog(blogId);
-    await loadBlogs();
+    setBlog((prev) =>
+      prev.map((b) =>
+        b.id === blogId ? { ...b, isLiked: true, like: b.like + 1 } : b
+      )
+    );
+
+    try {
+      await blogService.likeblog(blogId);
+    } catch (error) {
+      await loadBlogs();
+    }
   };
   const unlikeBlog = async (blogId: number) => {
-    await blogService.unlike(blogId);
-    await loadBlogs();
+
+    setBlog((prev) =>
+      prev.map((b) =>
+        b.id === blogId ? { ...b, isLiked: false, like: b.like - 1 } : b
+      )
+    );
+    try {
+          await blogService.unlike(blogId);
+
+    } catch (error) {
+      loadBlogs();
+    }
   };
 
   const addComment = async (
@@ -65,4 +91,4 @@ export const BlogProvider = async ({
     </BlogContext.Provider>
   );
 };
-export const useBlogs=()=>useContext(BlogContext)
+export const useBlogs = () => useContext(BlogContext);

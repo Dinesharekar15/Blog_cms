@@ -13,6 +13,6 @@ declare const getOneBlog: (req: CustomRequest, res: Response) => Promise<void>;
 declare const likeBlog: (req: CustomRequest, res: Response) => Promise<void>;
 declare const unlikeBlog: (req: CustomRequest, res: Response) => Promise<void>;
 declare const addComment: (req: CustomRequest, res: Response) => Promise<void>;
-declare const allComment: (req: CustomRequest, res: Response) => Promise<void>;
-export { creatBlog, allBlogs, likeBlog, addComment, unlikeBlog, allComment, getOneBlog, };
+declare const allCommentOfBlog: (req: CustomRequest, res: Response) => Promise<void>;
+export { creatBlog, allBlogs, likeBlog, addComment, unlikeBlog, allCommentOfBlog, getOneBlog, };
 //# sourceMappingURL=blog.d.ts.map

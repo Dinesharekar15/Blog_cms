@@ -1,17 +1,17 @@
-'use client'
+"use client";
 import { useBlogs } from "@/context/BlogContext";
-
+import { timeAgo } from "@/lib/timeago";
 
 import axios from "axios";
 import { useEffect, useState } from "react";
-import {CldImage } from "next-cloudinary"
+import { CldImage } from "next-cloudinary";
 
 type Blog = {
   id: string;
   title: string;
   description: string;
-  imageUrl:string,
-  userId:number
+  imageUrl: string;
+  userId: number;
   user: {
     name: string;
     email: string;
@@ -19,46 +19,49 @@ type Blog = {
 };
 
 export default function MainContentFeed() {
-  const{ blog,
-        comment,
-        loading,
-        likeBlog,
-        unlikeBlog,
-        addComment,
-        loadcommnet,}=useBlogs()
-  const post={
-      id: 1,
-      author: {
-
-        name: "Sarah Chen",
-        username: "@sarahchen",
-        avatar: "👩‍💻",
-        isVerified: true
-      },
-      content: {
-        title: "The Psychology of Remote Work: Why Some Thrive While Others Struggle",
-        excerpt: "After two years of remote work research, I've discovered the key factors that determine success in distributed teams. It's not what you think...",
-        image: "📊",
-        readTime: "8 min read",
-        category: "Business"
-      },
-      engagement: {
-        likes: 234,
-        comments: 45,
-        shares: 12,
-        saves: 89
-      },
-      isSubscribed: true,
-      publishedAt: "2 hours ago"
-    }
-  
+  const {
+    blog,
+    comment,
+    loading,
+    likeBlog,
+    unlikeBlog,
+    addComment,
+    loadcommnet,
+  } = useBlogs();
+  console.log(blog);
+  const post = {
+    id: 1,
+    author: {
+      name: "Sarah Chen",
+      username: "@sarahchen",
+      avatar: "👩‍💻",
+      isVerified: true,
+    },
+    content: {
+      title:
+        "The Psychology of Remote Work: Why Some Thrive While Others Struggle",
+      excerpt:
+        "After two years of remote work research, I've discovered the key factors that determine success in distributed teams. It's not what you think...",
+      image: "📊",
+      readTime: "8 min read",
+      category: "Business",
+    },
+    engagement: {
+      likes: 234,
+      comments: 45,
+      shares: 12,
+      saves: 89,
+    },
+    isSubscribed: true,
+    publishedAt: "2 hours ago",
+  };
 
   return (
     <div className="flex-1 bg-gray-900">
       {/* Scrollable Content Area */}
       <div className="h-screen overflow-y-auto scrollbar-auto-hide">
         <div className="max-w-2xl mx-auto p-6 space-y-6 pb-24 md:pb-6">
-          {blog.map((blog:any) => (
+          {blog.map((blog: any) => (
             <article
               key={blog.id}
               className="bg-gray-800 rounded-lg border border-gray-700 p-6 hover:border-gray-600 transition-all duration-200"
@@ -71,86 +74,118 @@ export default function MainContentFeed() {
                   </div>
                   <div>
                     <div className="cursor-pointer flex items-center space-x-2">
-                      <h3 className="text-white font-semibold text-sm">{blog.user.name}</h3>
-                      {blog.author.isVerified && (
-                        <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                      )}
+                      <h3 className="text-white font-semibold text-sm">
+                        {blog.user.name}
+                      </h3>
                     </div>
-                    <p className="text-gray-400 text-xs">{blog.user.email} · {blog.publishedAt}</p>
+                    <p className="text-gray-400 text-xs">
+                      {blog.user.email} · {timeAgo(blog.createdAt)}{" "}
+                    </p>
                   </div>
                 </div>
                 <button
                   className={` cursor-pointer px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
                     blog.isSubscribed
-                      ? 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                      : 'bg-orange-500 text-white hover:bg-orange-600'
+                      ? "bg-gray-600 text-gray-300 hover:bg-gray-500"
+                      : "bg-orange-500 text-white hover:bg-orange-600"
                   }`}
-                  
                 >
-                  {post.isSubscribed ? 'Followed' : 'Follow'}
+                  {post.isSubscribed ? "Followed" : "Follow"}
                 </button>
               </div>
 
               {/* Content */}
               <div className="mb-4">
-                <h2 className="text-white font-bold text-xl mb-2 leading-tight">{blog.title}</h2>
-                <div className="text-gray-300 text-sm leading-relaxed mb-4" dangerouslySetInnerHTML={{ __html: blog.description }}/>
-                
-                {/* Content Image/Media */}
-                
-                  {
-                    blog.imageUrl &&
-                    <div className="w-full h-48 bg-gray-700 rounded-lg flex items-center justify-center mb-4">
-                    <CldImage
-                    src={blog.imageUrl}
-                    width={800}
-                    height={300}
-                    crop="fill"
-                      gravity="center" 
-                    alt={blog.title}
-                    className="rounded-lg"
-                  />
-                  </div>
-                  }
-                   
-                </div>
+                <h2 className="text-white font-bold text-xl mb-2 leading-tight">
+                  {blog.title}
+                </h2>
+                <div
+                  className="text-gray-300 text-sm leading-relaxed mb-4"
+                  dangerouslySetInnerHTML={{ __html: blog.description }}
+                />
 
-                
-              
+                {/* Content Image/Media */}
+
+                {blog.imageUrl && (
+                  <div className="w-full h-48 bg-gray-700 rounded-lg flex items-center justify-center mb-4">
+                    <CldImage
+                      src={blog.imageUrl}
+                      width={800}
+                      height={300}
+                      crop="fill"
+                      gravity="center"
+                      alt={blog.title}
+                      className="rounded-lg"
+                    />
+                  </div>
+                )}
+              </div>
 
               {/* Engagement Actions */}
               <div className="flex items-center justify-between pt-4 border-t border-none">
                 <div className="flex items-center space-x-6">
-                  <button className="flex items-center space-x-2 text-gray-400 hover:text-red-500 transition-colors duration-200">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  <button
+                    onClick={() => {
+                      {
+                        blog.isLiked ? unlikeBlog(blog.id) : likeBlog(blog.id);
+                      }
+                    }}
+                    className="flex items-center space-x-2 text-gray-400  transition-colors duration-200 "
+                  >
+                    <svg
+                      className={`cursor-pointer w-5 h-5 transition-colors ${
+                        blog.isLiked
+                          ? "fill-red-500 text-red-500"
+                          : "fill-none text-gray-400"
+                      }`}
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                      />
                     </svg>
+
                     <span className="text-sm">{blog.like}</span>
                   </button>
-                  
+
                   <button className="flex items-center space-x-2 text-gray-400 hover:text-blue-500 transition-colors duration-200">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                      />
                     </svg>
-                    <span className="text-sm">{post.engagement.comments}</span>
+                    <span className="text-sm">{blog.comment}</span>
                   </button>
-                  
+
                   <button className="flex items-center space-x-2 text-gray-400 hover:text-green-500 transition-colors duration-200">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
+                      />
                     </svg>
                     <span className="text-sm">{post.engagement.shares}</span>
                   </button>
                 </div>
-                
-                <button className="flex items-center space-x-2 text-gray-400 hover:text-yellow-500 transition-colors duration-200">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                  </svg>
-                  <span className="text-sm">{post.engagement.saves}</span>
-                </button>
               </div>
             </article>
           ))}

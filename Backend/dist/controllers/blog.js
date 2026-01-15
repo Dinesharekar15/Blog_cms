@@ -82,6 +82,10 @@ const allBlogs = asyncHandler(async (req, res) => {
 const getOneBlog = async (req, res) => {
     const blogId = Number(req.params.blogId);
     const userId = Number(req.user?.id);
+    if (isNaN(blogId)) {
+        res.status(400).json({ msg: "Invalid blog id" });
+        return;
+    }
     try {
         const blog = await prisma.blog.findUnique({
             where: {
@@ -202,7 +206,7 @@ const addComment = async (req, res) => {
         res.status(500).json({ msg: "Fail to add comment" });
     }
 };
-const allComment = async (req, res) => {
+const allCommentOfBlog = async (req, res) => {
     const blogId = Number(req.params.blogId);
     try {
         const comments = await prisma.comment.findMany({
@@ -220,12 +224,12 @@ const allComment = async (req, res) => {
             },
             orderBy: { createdAt: "desc" },
         });
-        res.status(200).json({ msg: "GComments fetched", comments });
+        res.status(200).json({ msg: "Comments fetched", comments });
     }
     catch (error) {
         console.log(error);
         res.status(500).json({ msg: "Internal server error" });
     }
 };
-export { creatBlog, allBlogs, likeBlog, addComment, unlikeBlog, allComment, getOneBlog, };
+export { creatBlog, allBlogs, likeBlog, addComment, unlikeBlog, allCommentOfBlog, getOneBlog, };
 //# sourceMappingURL=blog.js.map
