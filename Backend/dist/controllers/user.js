@@ -1,24 +1,36 @@
 import asyncHandler from "express-async-handler";
 import { prisma } from "../lib/prisma.js";
-const userProfile = asyncHandler(async (req, res) => {
+const userProfile = async (req, res) => {
     try {
         const id = req.user.id;
-        const user = await prisma.user.findFirst({ where: { id } });
-        if (!user) {
-            res.json({ msg: "user not found error" });
-            return;
-        }
-        res.status(201).json({
-            user
+        const user = await prisma.user.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                bio: true,
+                profileImg: true,
+                createdAt: true,
+                _count: {
+                    select: {
+                        followers: true,
+                        following: true,
+                        blogs: true,
+                    },
+                },
+            },
         });
+        if (!user) {
+            return res.status(404).json({ msg: "User not found" });
+        }
+        return res.status(200).json({ user });
     }
     catch (error) {
-        console.log(error);
-        res.status(500).json({
-            msg: "Insternal server error"
-        });
+        console.error(error);
+        return res.status(500).json({ msg: "Internal server error" });
     }
-});
+};
 const userPost = asyncHandler(async (req, res) => {
     const userId = req.user.id;
     console.log(userId);
@@ -41,5 +53,38 @@ const userPost = asyncHandler(async (req, res) => {
         return;
     }
 });
-export { userProfile, userPost };
+const getUserMetaData = async (req, res) => {
+    const userId = Number(req.body.id);
+    try {
+        const data = await prisma.user.findUnique({
+            where: {
+                id: userId
+            },
+            select: {
+                name: true,
+                email: true,
+                bio: true,
+                profileImg: true,
+                _count: {
+                    select: {
+                        followers: true,
+                        following: true,
+                        blogs: true
+                    }
+                }
+            }
+        });
+        const formattedData = {
+            ...data,
+            followers: data?._count.followers,
+            following: data?._count.following,
+            blogsCount: data?._count.blogs
+        };
+        res.status(400).json({ formattedData });
+    }
+    catch (error) {
+        res.status(500).json({ mag: "Internal Server Error" });
+    }
+};
+export { userProfile, userPost, getUserMetaData };
 //# sourceMappingURL=user.js.map

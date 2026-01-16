@@ -20,8 +20,12 @@ model User {
   name      String
   email     String   @unique
   password  String
+  bio       String?
+  profileImg String?
 
-
+  followers   Follower[]@relation("userFollowers")
+  following   Follower[]@relation("userFollowing")
+  
   blogs     Blog[]
   comment  Comment[]
   like     Like[]
@@ -29,6 +33,21 @@ model User {
   
   createdAt DateTime @default(now())
 }
+
+model Follower{
+  id        Int @id @default(autoincrement())
+
+  followerId   Int
+  follower    User @relation("userFollowing",fields: [followerId],references: [id])
+
+  followingId   Int
+  following    User @relation("userFollowers",fields: [followingId],references: [id])
+
+
+  @@unique([followerId,followingId])
+}
+
+
 
 model Blog {
   id          Int      @id @default(autoincrement())

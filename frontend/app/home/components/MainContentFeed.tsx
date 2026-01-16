@@ -62,11 +62,12 @@ export default function MainContentFeed() {
       <div className="h-screen overflow-y-auto scrollbar-auto-hide">
         <div className="cursor-pointer max-w-2xl mx-auto p-6 space-y-6 pb-24 md:pb-6">
           {blogs.map((blog: any) => (
-            <Link key={blog.id} href={`/blog/${blog.id}`}>
+            
             <article
               key={blog.id}
-              className="bg-gray-800 rounded-lg border border-gray-700 p-6 hover:border-gray-600 transition-all duration-200"
+              className=" mt-8 bg-gray-800 rounded-lg border border-gray-700 p-6 hover:border-gray-600 transition-all duration-200"
             >
+              <Link key={blog.id} href={`/blog/${blog.id}`}>
               {/* Author Header */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
@@ -121,6 +122,7 @@ export default function MainContentFeed() {
                   </div>
                 )}
               </div>
+              </Link>
 
               {/* Engagement Actions */}
               <div className="flex items-center justify-between pt-4 border-t border-none">
@@ -152,8 +154,8 @@ export default function MainContentFeed() {
 
                     <span className="text-sm">{blog.like}</span>
                   </button>
-
-                  <button className="flex items-center space-x-2 text-gray-400 hover:text-blue-500 transition-colors duration-200">
+                  <Link key={blog.id} href={`/blog/${blog.id}`}>
+                  <button className="flex cursor-pointer items-center space-x-2 text-gray-400 hover:text-blue-500 transition-colors duration-200">
                     <svg
                       className="w-5 h-5"
                       fill="none"
@@ -161,7 +163,7 @@ export default function MainContentFeed() {
                       viewBox="0 0 24 24"
                     >
                       <path
-                        strokeLinecap="round"
+                        strokeLinecap="round"              
                         strokeLinejoin="round"
                         strokeWidth={2}
                         d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
@@ -169,6 +171,7 @@ export default function MainContentFeed() {
                     </svg>
                     <span className="text-sm">{blog.comment}</span>
                   </button>
+                  </Link>
 
                   <button className="flex items-center space-x-2 text-gray-400 hover:text-green-500 transition-colors duration-200">
                     <svg
@@ -189,7 +192,7 @@ export default function MainContentFeed() {
                 </div>
               </div>
             </article>
-            </Link>
+            
           ))}
         </div>
       </div>

@@ -8,26 +8,40 @@ interface CustomRequest extends Request{
 }
 
 
-const userProfile=asyncHandler(async(req:CustomRequest,res:Response)=>{
-        try {
-                const id=req.user.id;
-               
-                const user =await prisma.user.findFirst({where:{id}})
-        if(!user){
-                res.json({msg:"user not found error"})
-                return
-        }
-        res.status(201).json({
-                user
-        })
-        } catch (error) {
-                console.log(error)
-                res.status(500).json({
-                        msg:"Insternal server error"
-                })
-        }
-        
-})
+const userProfile = async (req: CustomRequest, res: Response) => {
+  try {
+    const id = req.user.id;
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        bio: true,
+        profileImg: true,
+        createdAt: true,
+        _count: {
+          select: {
+            followers: true,
+            following: true,
+            blogs: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    return res.status(200).json({ user });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "Internal server error" });
+  }
+};
+
 
 const userPost=asyncHandler(async(req:CustomRequest,res:Response)=>{
         const userId=req.user.id
@@ -51,5 +65,54 @@ const userPost=asyncHandler(async(req:CustomRequest,res:Response)=>{
         }
 })
 
+const getUserMetaData=async (req:CustomRequest,res:Response)=>{
+        const userId=Number(req.params.userId)
+        const loggedInUserId=req.user.id
+        const isFollowing=await prisma.follower.findUnique({
+                where: {
+    followerId_followingId: {
+      followerId: loggedInUserId,
+      followingId: userId,
+    },
+  },
 
-export{userProfile,userPost}
+        })
+       try {
+        const user=await prisma.user.findUnique({
+        where:{
+                id:userId
+        },
+        select:{
+                name:true,
+                email:true,
+                bio:true,
+                profileImg:true,
+                _count:{
+                        select:{
+                                followers:true,
+                                following:true,
+                                blogs:true
+                        }
+                }
+        }
+        
+        
+        })
+         if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+        const formattedData={
+                ...user,
+                followers:user?._count.followers,
+                following:user?._count.following,
+                blogsCount:user?._count.blogs,
+                isFollowing:Boolean()
+        }
+        res.status(200).json({formattedData})
+       } catch (error) {
+        res.status(500).json({mag:"Internal Server Error"})
+       }
+}
+
+
+export{userProfile,userPost,getUserMetaData}
