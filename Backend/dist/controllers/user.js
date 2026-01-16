@@ -31,15 +31,35 @@ const userProfile = async (req, res) => {
         return res.status(500).json({ msg: "Internal server error" });
     }
 };
-const userPost = asyncHandler(async (req, res) => {
+const userBolgs = asyncHandler(async (req, res) => {
     const userId = req.user.id;
     console.log(userId);
     if (!userId) {
-        res.status(401).json({ message: 'Unauthorized' });
+        res.status(401).json({ message: "Unauthorized" });
         return;
     }
     try {
-        const blogs = await prisma.blog.findMany({ where: { userId } });
+        const blogs = await prisma.blog.findMany({
+            where: { userId },
+            include: {
+                user: {
+                    select: {
+                        name: true,
+                        profileImg: true,
+                        email: true,
+                    }
+                },
+                _count: {
+                    select: {
+                        like: true,
+                        comment: true
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: "desc"
+            }
+        });
         // console.log(userId)
         if (blogs.length === 0) {
             res.status(201).json({ msg: "No blogs posted", blogs: [] });
@@ -49,18 +69,28 @@ const userPost = asyncHandler(async (req, res) => {
         return;
     }
     catch (error) {
-        res.status(500).json({ msg: 'Error during searching blogs', error });
+        res.status(500).json({ msg: "Error during searching blogs", error });
         return;
     }
 });
 const getUserMetaData = async (req, res) => {
-    const userId = Number(req.body.id);
+    const userId = Number(req.params.userId);
+    const loggedInUserId = req.user.id;
     try {
-        const data = await prisma.user.findUnique({
+        const isFollowing = await prisma.follower.findUnique({
             where: {
-                id: userId
+                followerId_followingId: {
+                    followerId: loggedInUserId,
+                    followingId: userId,
+                },
+            },
+        });
+        const user = await prisma.user.findUnique({
+            where: {
+                id: userId,
             },
             select: {
+                id: true,
                 name: true,
                 email: true,
                 bio: true,
@@ -69,22 +99,175 @@ const getUserMetaData = async (req, res) => {
                     select: {
                         followers: true,
                         following: true,
-                        blogs: true
-                    }
-                }
-            }
+                        blogs: true,
+                    },
+                },
+            },
         });
+        if (!user) {
+            return res.status(404).json({ msg: "User not found" });
+        }
         const formattedData = {
-            ...data,
-            followers: data?._count.followers,
-            following: data?._count.following,
-            blogsCount: data?._count.blogs
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            bio: user.bio,
+            profileImg: user.profileImg,
+            followersCount: user?._count.followers,
+            followingCount: user?._count.following,
+            blogsCount: user?._count.blogs,
+            isFollowing: Boolean(isFollowing),
         };
-        res.status(400).json({ formattedData });
+        res.status(200).json({ formattedData });
     }
     catch (error) {
         res.status(500).json({ mag: "Internal Server Error" });
     }
 };
-export { userProfile, userPost, getUserMetaData };
+const followUser = async (req, res) => {
+    const userId = Number(req.params.userId);
+    const loggedInUserId = req.user.id;
+    if (userId === loggedInUserId) {
+        return res.status(400).json({ msg: "You cannot follow yourself" });
+    }
+    try {
+        await prisma.follower.create({
+            data: {
+                followerId: loggedInUserId,
+                followingId: userId,
+            },
+        });
+        return res.status(200).json({ msg: "Followed user successfully" });
+    }
+    catch (error) {
+        if (error.code === "P2002") {
+            return res.status(400).json({ msg: "You already follow this user" });
+        }
+        console.error(error);
+        return res.status(500).json({ msg: "Internal Server Error" });
+    }
+};
+const unFollowUser = async (req, res) => {
+    const userId = Number(req.params.userId);
+    const loggedInUserId = req.user.id;
+    if (userId === loggedInUserId) {
+        return res.status(400).json({ msg: "You cannot unfollow yourself" });
+    }
+    try {
+        await prisma.follower.delete({
+            where: {
+                followerId_followingId: {
+                    followerId: loggedInUserId,
+                    followingId: userId,
+                },
+            },
+        });
+        return res.status(200).json({ msg: "Unfollowed user successfully" });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({ msg: "Internal Server Error" });
+    }
+};
+const getUserFollowers = async (req, res) => {
+    const userId = Number(req.params.userId);
+    try {
+        const followers = await prisma.follower.findMany({
+            where: {
+                followingId: userId,
+            },
+            include: {
+                follower: {
+                    select: {
+                        id: true,
+                        email: true,
+                        name: true,
+                        profileImg: true,
+                    },
+                },
+            },
+            orderBy: {
+                id: "desc"
+            }
+        });
+        const formattedFollowers = followers.map((f) => f.follower);
+        res.status(200).json({
+            count: formattedFollowers.length,
+            followers: formattedFollowers
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({ msg: "Internal Server Error" });
+    }
+};
+const getUserFollowings = async (req, res) => {
+    const userId = Number(req.params.userId);
+    try {
+        const followings = await prisma.follower.findMany({
+            where: {
+                followerId: userId,
+            },
+            include: {
+                following: {
+                    select: {
+                        id: true,
+                        email: true,
+                        name: true,
+                        profileImg: true,
+                    },
+                },
+            },
+            orderBy: {
+                id: "desc"
+            }
+        });
+        const formattedFollowings = followings.map((f) => f.following);
+        res.status(200).json({
+            count: formattedFollowings.length,
+            followings: formattedFollowings
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({ msg: "Internal Server Error" });
+    }
+};
+const getUserBlogs = async (req, res) => {
+    const userId = Number(req.params.userId);
+    try {
+        const blogs = await prisma.blog.findMany({
+            where: {
+                userId, // get only this user's blogs
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        profileImg: true,
+                    },
+                },
+                _count: {
+                    select: {
+                        like: true,
+                        comment: true,
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+        });
+        return res.status(200).json({
+            count: blogs.length,
+            blogs,
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({ msg: "Internal Server Error" });
+    }
+};
+export { userProfile, userBolgs, getUserMetaData, followUser, unFollowUser, getUserFollowers, getUserFollowings, getUserBlogs };
 //# sourceMappingURL=user.js.map
