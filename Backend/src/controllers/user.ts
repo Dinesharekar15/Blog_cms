@@ -2,6 +2,7 @@ import asyncHandler from "express-async-handler";
 
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
+import { Prisma } from "@prisma/client";
 
 interface CustomRequest extends Request {
   user?: any;
@@ -188,7 +189,7 @@ const unFollowUser = async (req: CustomRequest, res: Response) => {
 
 const getUserFollowers = async (req: CustomRequest, res: Response) => {
   const userId = Number(req.params.userId);
-
+  const loggedInUserId=req.user.id
   try {
     const followers = await prisma.follower.findMany({
       where: {
@@ -209,14 +210,32 @@ const getUserFollowers = async (req: CustomRequest, res: Response) => {
         id:"desc"
       }
     });
-    const formattedFollowers=followers.map((f)=>f.follower)
+    const formattedFollowers= await Promise.all(
+      followers.map(async(f)=>{
+        const isFollowing=await prisma.follower.findUnique({
+          where:{
+            followerId_followingId:{
+              followerId:loggedInUserId,
+              followingId:userId
+            }
+          }
+        })
+        return{
+          ...f.follower,
+          isFollowing:Boolean(isFollowing)
+        }
+      })
+    )
+
+
+
     res.status(200).json({ 
         count:formattedFollowers.length,
-        followers:formattedFollowers
+        followers:formattedFollowers,
      });
   } catch (error) {
 
-        console.error(error);
+    console.error(error);
     return res.status(500).json({ msg: "Internal Server Error" });
 
   }
@@ -225,7 +244,7 @@ const getUserFollowers = async (req: CustomRequest, res: Response) => {
 
 const getUserFollowings = async (req: CustomRequest, res: Response) => {
   const userId = Number(req.params.userId);
-
+  const loggedInUserId=req.user.id
   try {
     const followings = await prisma.follower.findMany({
       where: {
@@ -246,13 +265,27 @@ const getUserFollowings = async (req: CustomRequest, res: Response) => {
         id:"desc"
       }
     });
-    const formattedFollowings=followings.map((f)=>f.following)
+    const formattedFollowings=await Promise.all(
+      followings.map(async(f)=>{
+        const isFollowing=await prisma.follower.findUnique({
+          where:{
+            followerId_followingId:{
+              followerId:loggedInUserId,
+              followingId:userId
+            }
+          }
+        })
+        return {
+          ...f.following,
+          isFollowing:Boolean(isFollowing)
+        }
+      })
+    )
     res.status(200).json({ 
         count:formattedFollowings.length,
         followings:formattedFollowings
      });
   } catch (error) {
-
         console.error(error);
     return res.status(500).json({ msg: "Internal Server Error" });
 

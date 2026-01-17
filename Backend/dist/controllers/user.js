@@ -1,5 +1,6 @@
 import asyncHandler from "express-async-handler";
 import { prisma } from "../lib/prisma.js";
+import { Prisma } from "@prisma/client";
 const userProfile = async (req, res) => {
     try {
         const id = req.user.id;
@@ -171,6 +172,7 @@ const unFollowUser = async (req, res) => {
 };
 const getUserFollowers = async (req, res) => {
     const userId = Number(req.params.userId);
+    const loggedInUserId = req.user.id;
     try {
         const followers = await prisma.follower.findMany({
             where: {
@@ -190,10 +192,23 @@ const getUserFollowers = async (req, res) => {
                 id: "desc"
             }
         });
-        const formattedFollowers = followers.map((f) => f.follower);
+        const formattedFollowers = await Promise.all(followers.map(async (f) => {
+            const isFollowing = await prisma.follower.findUnique({
+                where: {
+                    followerId_followingId: {
+                        followerId: loggedInUserId,
+                        followingId: userId
+                    }
+                }
+            });
+            return {
+                ...f.follower,
+                isFollowing: Boolean(isFollowing)
+            };
+        }));
         res.status(200).json({
             count: formattedFollowers.length,
-            followers: formattedFollowers
+            followers: formattedFollowers,
         });
     }
     catch (error) {
@@ -203,6 +218,7 @@ const getUserFollowers = async (req, res) => {
 };
 const getUserFollowings = async (req, res) => {
     const userId = Number(req.params.userId);
+    const loggedInUserId = req.user.id;
     try {
         const followings = await prisma.follower.findMany({
             where: {
@@ -222,7 +238,20 @@ const getUserFollowings = async (req, res) => {
                 id: "desc"
             }
         });
-        const formattedFollowings = followings.map((f) => f.following);
+        const formattedFollowings = await Promise.all(followings.map(async (f) => {
+            const isFollowing = await prisma.follower.findUnique({
+                where: {
+                    followerId_followingId: {
+                        followerId: loggedInUserId,
+                        followingId: userId
+                    }
+                }
+            });
+            return {
+                ...f.following,
+                isFollowing: Boolean(isFollowing)
+            };
+        }));
         res.status(200).json({
             count: formattedFollowings.length,
             followings: formattedFollowings
