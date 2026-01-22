@@ -1,13 +1,11 @@
-import axios from "axios"
 import {api} from "../lib/api"
 
-
+ 
 class BlogService{
     async getAll(){
         const res=await api.get(`/blog`)
         return res.data
     }
-
     async getById(blogId:number){
         const res=await api.get(`/blog/${blogId}`)
         return res.data

@@ -8,7 +8,7 @@ interface CustomRequest extends Request {
   user?: any;
 }
 
-const userProfile = async (req: CustomRequest, res: Response) => {
+const loggedInUserProfile = async (req: CustomRequest, res: Response) => {
   try {
     const id = req.user.id;
 
@@ -35,14 +35,25 @@ const userProfile = async (req: CustomRequest, res: Response) => {
       return res.status(404).json({ msg: "User not found" });
     }
 
-    return res.status(200).json({ user });
+    const formatted={
+      id:user.id,
+      name:user.name,
+      email:user.email,
+      bio:user.bio,
+      profileImg:user.profileImg,
+      followingCount:user._count.following,
+      followersCount:user._count.followers,
+      blogCount:user._count.blogs
+    }
+
+    return res.status(200).json({ formatted });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "Internal server error" });
   }
 };
 
-const userBolgs = asyncHandler(async (req: CustomRequest, res: Response) => {
+const loggedInUserBolgs = asyncHandler(async (req: CustomRequest, res: Response) => {
   const userId = req.user.id;
   console.log(userId);
   if (!userId) {
@@ -169,7 +180,7 @@ const unFollowUser = async (req: CustomRequest, res: Response) => {
   if (userId === loggedInUserId) {
     return res.status(400).json({ msg: "You cannot unfollow yourself" });
   }
-
+  console.log("userIdBackend:",userId)
   try {
     await prisma.follower.delete({
       where: {
@@ -332,4 +343,4 @@ const getUserBlogs = async (req: CustomRequest, res: Response) => {
 };
 
 
-export { userProfile, userBolgs, getUserMetaData, followUser, unFollowUser ,getUserFollowers ,getUserFollowings,getUserBlogs};
+export { loggedInUserProfile, loggedInUserBolgs, getUserMetaData, followUser, unFollowUser ,getUserFollowers ,getUserFollowings,getUserBlogs};

@@ -84,6 +84,7 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
     <BlogContext.Provider
       value={{
         blogs,
+        setBlogs,
         comments,
         loading,
         likeBlog,

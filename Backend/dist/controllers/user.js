@@ -1,7 +1,7 @@
 import asyncHandler from "express-async-handler";
 import { prisma } from "../lib/prisma.js";
 import { Prisma } from "@prisma/client";
-const userProfile = async (req, res) => {
+const loggedInUserProfile = async (req, res) => {
     try {
         const id = req.user.id;
         const user = await prisma.user.findUnique({
@@ -25,14 +25,24 @@ const userProfile = async (req, res) => {
         if (!user) {
             return res.status(404).json({ msg: "User not found" });
         }
-        return res.status(200).json({ user });
+        const formatted = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            bio: user.bio,
+            profileImg: user.profileImg,
+            followingCount: user._count.following,
+            followersCount: user._count.followers,
+            blogCount: user._count.blogs
+        };
+        return res.status(200).json({ formatted });
     }
     catch (error) {
         console.error(error);
         return res.status(500).json({ msg: "Internal server error" });
     }
 };
-const userBolgs = asyncHandler(async (req, res) => {
+const loggedInUserBolgs = asyncHandler(async (req, res) => {
     const userId = req.user.id;
     console.log(userId);
     if (!userId) {
@@ -154,6 +164,7 @@ const unFollowUser = async (req, res) => {
     if (userId === loggedInUserId) {
         return res.status(400).json({ msg: "You cannot unfollow yourself" });
     }
+    console.log("userIdBackend:", userId);
     try {
         await prisma.follower.delete({
             where: {
@@ -298,5 +309,5 @@ const getUserBlogs = async (req, res) => {
         return res.status(500).json({ msg: "Internal Server Error" });
     }
 };
-export { userProfile, userBolgs, getUserMetaData, followUser, unFollowUser, getUserFollowers, getUserFollowings, getUserBlogs };
+export { loggedInUserProfile, loggedInUserBolgs, getUserMetaData, followUser, unFollowUser, getUserFollowers, getUserFollowings, getUserBlogs };
 //# sourceMappingURL=user.js.map

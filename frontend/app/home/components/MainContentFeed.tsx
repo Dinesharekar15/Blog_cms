@@ -5,7 +5,7 @@ import Link from "next/link";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { CldImage } from "next-cloudinary";
-
+import { useUser } from "@/context/UserContext";
 type Blog = {
   id: string;
   title: string;
@@ -18,9 +18,11 @@ type Blog = {
   };
 };
 
+
 export default function MainContentFeed() {
   const {
     blogs,
+    setBlogs,
     comment,
     loading,
     likeBlog,
@@ -29,6 +31,8 @@ export default function MainContentFeed() {
     loadComments,
     loadBlogs
   } = useBlogs();
+  const {user,followUser,unfollowUser}=useUser();
+  const [loadingUserId,setLoadingUserId]=useState<any|null>(null)
   const post = {
     id: 1,
     author: {
@@ -55,7 +59,37 @@ export default function MainContentFeed() {
     isSubscribed: true,
     publishedAt: "2 hours ago",
   };
+  const handelFollow=async(userId:number,isFollowing:boolean)=>{
+    if(loadingUserId===userId) return;
+    setLoadingUserId(userId)
+    setBlogs((prev:any)=>(
+      prev.map((blog:any)=>{
+        blog.user.id===userId
+        ?{...blog,isFollowing:!isFollowing}
+        :blog
+      })
+    ))
 
+    try {
+  if (isFollowing) {
+    await unfollowUser(userId);
+  } else {
+    await followUser(userId);
+  }
+} catch {
+  // rollback UI if API fails
+  setBlogs((prev:any) =>
+    prev.map((blog:any) =>
+      blog.user.id === userId
+        ? { ...blog, isFollowing }
+        : blog
+    )
+  );
+} finally {
+  setLoadingUserId(null);
+}
+
+  }
   return (
     <div className="flex-1 bg-gray-900">
       {/* Scrollable Content Area */}
@@ -67,7 +101,7 @@ export default function MainContentFeed() {
               key={blog.id}
               className=" mt-8 bg-gray-800 rounded-lg border border-gray-700 p-6 hover:border-gray-600 transition-all duration-200"
             >
-              <Link key={blog.id} href={`/blog/${blog.id}`}>
+              
               {/* Author Header */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
@@ -85,16 +119,23 @@ export default function MainContentFeed() {
                     </p>
                   </div>
                 </div>
-                <button
+                {
+                  blog.user.id!=user?.id && 
+                  <button
+                  disabled={loadingUserId===blog.user.id}
+                  onClick={()=>{handelFollow(blog.user.id,blog.isFollowing)}}
                   className={` cursor-pointer px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
-                    blog.isSubscribed
+                    blog.isFollowing
                       ? "bg-gray-600 text-gray-300 hover:bg-gray-500"
                       : "bg-orange-500 text-white hover:bg-orange-600"
                   }`}
                 >
-                  {post.isSubscribed ? "Followed" : "Follow"}
+                  {blog.isFollowing ? "Following" : "Follow"}
                 </button>
+                }
+                
               </div>
+              <Link key={blog.id} href={`/blog/${blog.id}`}>
 
               {/* Content */}
               <div className="mb-4">

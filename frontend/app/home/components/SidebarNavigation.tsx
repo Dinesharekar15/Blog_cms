@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, use } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import axios from 'axios';
+import { useUser } from '@/context/UserContext';
 
 interface SidebarNavigationProps {
   onActivityClick?: () => void;
@@ -22,7 +23,8 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
   const appearanceRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const [user,setUser]= useState<user|null>(null);
+  // const [user,setUser]= useState<user|null>(null);
+  const{user}=useUser();
   // Update active navigation based on current route
   useEffect(() => {
     if (pathname === '/home') {
@@ -108,24 +110,7 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
     // Don't close the dropdown - let user click "Appearance" to close it
   };
   const backend_url=process.env.NEXT_PUBLIC_BACKEND_URL;
-  useEffect(()=>{
-    
-      
-      const getProfile=async()=>{
-        try {
-          
-          const responces=await axios.get(`${backend_url}/user/profile`,{withCredentials:true})
-          setUser(responces.data.user)
-          console.log("User:",responces.data)
-        } catch (error:any) {
-                console.log(error.responces.error)
-
-        }
-      }
-      getProfile()
-   
-    
-  },[])
+  
   return (
     <div className="bg-gray-900 text-white w-64 md:w-16 lg:w-64 h-screen flex-col fixed left-0 top-0 z-40 hidden md:flex">
       {/* Logo Section */}

@@ -1,15 +1,22 @@
 import express from "express"
-import { followUser, getUserBlogs, getUserFollowers, getUserFollowings, getUserMetaData, unFollowUser, userBolgs, userProfile } from "../controllers/user.js"
+import { followUser, getUserBlogs, getUserFollowers, getUserFollowings, getUserMetaData, unFollowUser, loggedInUserBolgs, loggedInUserProfile } from "../controllers/user.js"
 import { isUserAuthenticated } from "../middelwares/authmiddelware.js"
 const router=express.Router()
 
-router.get("/profile",isUserAuthenticated,userProfile)
-router.get('/me/blogs',isUserAuthenticated,userBolgs)
+// Logged-in user
+router.get("/me",isUserAuthenticated,loggedInUserProfile)
+router.get('/me/blogs',isUserAuthenticated,loggedInUserBolgs)
+
+// Any user
 router.get('/:userId/metadata',isUserAuthenticated,getUserMetaData)
-router.post('/:userId/follow',isUserAuthenticated,followUser)
-router.delete('/:userId/unfollow',isUserAuthenticated,unFollowUser)
 router.get("/:userId/followers",isUserAuthenticated,getUserFollowers)
-router.get("/:userId/followings",isUserAuthenticated,getUserFollowings)
+router.get("/:userId/following",isUserAuthenticated,getUserFollowings)
 router.get("/:userId/blogs", isUserAuthenticated, getUserBlogs);
+
+// Follow / Unfollow (single resource)
+router.post('/:userId/follow',isUserAuthenticated,followUser)
+router.delete('/:userId/follow',isUserAuthenticated,unFollowUser)
+
+
 
 export default router

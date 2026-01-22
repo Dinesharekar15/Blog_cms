@@ -67,6 +67,7 @@ const allBlogs = asyncHandler(async (req: CustomRequest, res: Response) => {
       include: {
         user: {
           select: {
+            id:true,
             name: true,
             email: true,
           },
@@ -78,11 +79,33 @@ const allBlogs = asyncHandler(async (req: CustomRequest, res: Response) => {
         createdAt: "desc",
       },
     });
+    //isFollowing Logic
+
+    let followingSet=new Set<number>()
+    if(userId){
+    const authorIds=blogs.map((b)=>(b.user.id))
+
+    const followingRelationship=await prisma.follower.findMany({
+      where:{
+        followerId:userId,
+        followingId:{in:authorIds}
+      },
+      select:{
+        followingId:true
+      }
+    })
+
+    followingSet=new Set(
+      followingRelationship.map((f)=>(f.followingId))
+    )
+  }
+
     const formattedBlog = blogs.map((blog) => ({
       ...blog,
       like: blog._count.like,
       comment: blog._count.comment,
       isLiked: blog.like?.length > 0,
+      isFollowing:userId ?followingSet.has(blog.user.id):false
     }));
     res.status(200).json({ msg: "All Bogs ", formattedBlog });
     return;
