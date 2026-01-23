@@ -62,13 +62,13 @@ export default function MainContentFeed() {
   const handelFollow=async(userId:number,isFollowing:boolean)=>{
     if(loadingUserId===userId) return;
     setLoadingUserId(userId)
-    setBlogs((prev:any)=>(
-      prev.map((blog:any)=>{
+    setBlogs((prev:any)=>
+      prev.map((blog:any)=>
         blog.user.id===userId
         ?{...blog,isFollowing:!isFollowing}
         :blog
-      })
-    ))
+      )
+    )
 
     try {
   if (isFollowing) {
