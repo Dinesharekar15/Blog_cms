@@ -6,6 +6,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { CldImage } from "next-cloudinary";
 import { useUser } from "@/context/UserContext";
+import { UserHoverCard } from "./UserHoverCard";
 type Blog = {
   id: string;
   title: string;
@@ -33,32 +34,6 @@ export default function MainContentFeed() {
   } = useBlogs();
   const {user,followUser,unfollowUser}=useUser();
   const [loadingUserId,setLoadingUserId]=useState<any|null>(null)
-  const post = {
-    id: 1,
-    author: {
-      name: "Sarah Chen",
-      username: "@sarahchen",
-      avatar: "👩‍💻",
-      isVerified: true,
-    },
-    content: {
-      title:
-        "The Psychology of Remote Work: Why Some Thrive While Others Struggle",
-      excerpt:
-        "After two years of remote work research, I've discovered the key factors that determine success in distributed teams. It's not what you think...",
-      image: "📊",
-      readTime: "8 min read",
-      category: "Business",
-    },
-    engagement: {
-      likes: 234,
-      comments: 45,
-      shares: 12,
-      saves: 89,
-    },
-    isSubscribed: true,
-    publishedAt: "2 hours ago",
-  };
   const handelFollow=async(userId:number,isFollowing:boolean)=>{
     if(loadingUserId===userId) return;
     setLoadingUserId(userId)
@@ -106,13 +81,12 @@ export default function MainContentFeed() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <div className="cursor-pointer w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-lg">
-                    {post.author.avatar}
+                    {blog.user.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
                     <div className="cursor-pointer flex items-center space-x-2">
-                      <h3 className="text-white font-semibold text-sm hover:text-blue-400 transition-colors duration-200">
-                        {blog.user.name}
-                      </h3>
+                      {/* <h3>{blog.user.name}</h3> */}
+                      <UserHoverCard blog={blog} onFollow={handelFollow} loadingUserId={loadingUserId} />
                     </div>
                     <p className="text-gray-400 text-xs">
                       {blog.user.email} · {timeAgo(blog.createdAt)}{" "}
@@ -228,7 +202,6 @@ export default function MainContentFeed() {
                         d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
                       />
                     </svg>
-                    <span className="text-sm">{post.engagement.shares}</span>
                   </button>
                 </div>
               </div>

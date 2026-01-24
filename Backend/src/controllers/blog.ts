@@ -70,6 +70,7 @@ const allBlogs = asyncHandler(async (req: CustomRequest, res: Response) => {
             id:true,
             name: true,
             email: true,
+            createdAt:true
           },
         },
         _count: { select: { like: true, comment: true } },

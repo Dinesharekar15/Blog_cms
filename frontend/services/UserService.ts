@@ -2,7 +2,7 @@ import { api } from "@/lib/api";
 
 
 class UserService {
-
+    
     async getLoggedInUserData(){
         const res=await api.get(`user/me`)
         return res.data.formatted
