@@ -5,7 +5,7 @@ import { useBlogs } from "@/context/BlogContext";
 import { useEffect, useRef, useState } from "react";
 import { CldImage } from "next-cloudinary";
 import { timeAgo } from "@/lib/timeago";
-
+import { UserHoverCard } from "@/app/home/components/UserHoverCard";
 export default function BlogDetailPage() {
   const param = useParams() as { blogId: string };
   const id = Number(param.blogId);
@@ -36,32 +36,7 @@ export default function BlogDetailPage() {
 
   if (!blog) return <p>Loading...</p>;
 
-  const post = {
-    id: 1,
-    author: {
-      name: "Sarah Chen",
-      username: "@sarahchen",
-      avatar: "👩‍💻",
-      isVerified: true,
-    },
-    content: {
-      title:
-        "The Psychology of Remote Work: Why Some Thrive While Others Struggle",
-      excerpt:
-        "After two years of remote work research, I've discovered the key factors that determine success in distributed teams. It's not what you think...",
-      image: "📊",
-      readTime: "8 min read",
-      category: "Business",
-    },
-    engagement: {
-      likes: 234,
-      comments: 45,
-      shares: 12,
-      saves: 89,
-    },
-    isSubscribed: true,
-    publishedAt: "2 hours ago",
-  };
+  
   const handleAddComment = async () => {
     if (!commentText.trim()) return;
 
@@ -100,6 +75,7 @@ export default function BlogDetailPage() {
                     <div className="cursor-pointer flex items-center space-x-2">
                       <h3 className="text-white font-semibold text-sm hover:text-blue-400 transition-colors duration-200">
                         {blog.user.name}
+                        {/* <UserHoverCard /> */}
                       </h3>
                     </div>
                     <p className="text-gray-400 text-xs">
@@ -207,7 +183,7 @@ export default function BlogDetailPage() {
                         d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
                       />
                     </svg>
-                    <span className="text-sm">{post.engagement.shares}</span>
+                    
                   </button>
                 </div>
               </div>

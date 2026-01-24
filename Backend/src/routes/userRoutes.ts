@@ -2,7 +2,7 @@ import express from "express"
 import { followUser, getUserBlogs, getUserFollowers, getUserFollowings, getUserMetaData, unFollowUser, loggedInUserBolgs, loggedInUserProfile } from "../controllers/user.js"
 import { isUserAuthenticated } from "../middelwares/authmiddelware.js"
 const router=express.Router()
-
+  
 // Logged-in user
 router.get("/me",isUserAuthenticated,loggedInUserProfile)
 router.get('/me/blogs',isUserAuthenticated,loggedInUserBolgs)

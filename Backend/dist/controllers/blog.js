@@ -55,10 +55,22 @@ const allBlogs = asyncHandler(async (req, res) => {
                         id: true,
                         name: true,
                         email: true,
-                        createdAt: true
+                        createdAt: true,
+                        _count: {
+                            select: {
+                                followers: true,
+                                following: true,
+                                blogs: true,
+                            },
+                        },
                     },
                 },
-                _count: { select: { like: true, comment: true } },
+                _count: {
+                    select: {
+                        like: true,
+                        comment: true,
+                    },
+                },
                 like: userId ? { where: { userId } } : false,
             },
             orderBy: {

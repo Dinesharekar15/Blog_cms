@@ -64,22 +64,35 @@ const allBlogs = asyncHandler(async (req: CustomRequest, res: Response) => {
   const userId = Number(req.user?.id);
   try {
     const blogs = await prisma.blog.findMany({
-      include: {
-        user: {
+  include: {
+    user: {
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
+        _count: {
           select: {
-            id:true,
-            name: true,
-            email: true,
-            createdAt:true
+            followers: true,
+            following: true,
+            blogs: true,
           },
         },
-        _count: { select: { like: true, comment: true } },
-        like: userId ? { where: { userId } } : false,
       },
-      orderBy: {
-        createdAt: "desc",
+    },
+    _count: {
+      select: {
+        like: true,
+        comment: true,
       },
-    });
+    },
+    like: userId ? { where: { userId } } : false,
+  },
+  orderBy: {
+    createdAt: "desc",
+  },
+});
+
     //isFollowing Logic
 
     let followingSet=new Set<number>()

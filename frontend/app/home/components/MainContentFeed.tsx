@@ -34,16 +34,29 @@ export default function MainContentFeed() {
   } = useBlogs();
   const {user,followUser,unfollowUser}=useUser();
   const [loadingUserId,setLoadingUserId]=useState<any|null>(null)
+
+
   const handelFollow=async(userId:number,isFollowing:boolean)=>{
     if(loadingUserId===userId) return;
     setLoadingUserId(userId)
-    setBlogs((prev:any)=>
-      prev.map((blog:any)=>
-        blog.user.id===userId
-        ?{...blog,isFollowing:!isFollowing}
-        :blog
-      )
-    )
+    setBlogs((prev:any) =>
+  prev.map((blog:any) => {
+    if (blog.user.id !== userId) return blog;
+
+    return {
+      ...blog,
+      isFollowing: !isFollowing,
+      user: {
+        ...blog.user,
+        _count: {
+          ...blog.user._count,
+          followers: blog.user._count.followers + (isFollowing ? -1 : 1),
+        },
+      },
+    };
+  })
+);
+
 
     try {
   if (isFollowing) {
@@ -86,7 +99,7 @@ export default function MainContentFeed() {
                   <div>
                     <div className="cursor-pointer flex items-center space-x-2">
                       {/* <h3>{blog.user.name}</h3> */}
-                      <UserHoverCard blog={blog} onFollow={handelFollow} loadingUserId={loadingUserId} />
+                      <UserHoverCard hoverduser={user} onFollow={handelFollow} loadingUserId={loadingUserId} isFollowing={blog.isFollowing}/>
                     </div>
                     <p className="text-gray-400 text-xs">
                       {blog.user.email} · {timeAgo(blog.createdAt)}{" "}
