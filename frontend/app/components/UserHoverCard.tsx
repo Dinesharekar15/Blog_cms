@@ -11,7 +11,7 @@ import { useUser } from "@/context/UserContext";
 import { useBlogs } from "@/context/BlogContext";
 import { useState } from "react";
 
-export function UserHoverCard({ hoverduser,isFollowing,onFollow,loadingUserId}: { hoverduser: any,isFollowing:boolean,onFollow:(userId:number,isFollowing:boolean)=>void,loadingUserId:number|null} ) {
+export function UserHoverCard({ hoverduser,onFollow,loadingUserId}: { hoverduser: any,onFollow:(userId:number)=>void,loadingUserId:number|null} ) {
     const {user,followUser,unfollowUser}=useUser();
     const {blogs,setBlogs}=useBlogs();
     
@@ -74,12 +74,12 @@ export function UserHoverCard({ hoverduser,isFollowing,onFollow,loadingUserId}: 
         <div className="mt-4">
             {
                 hoverduser.id!=user?.id &&
-                <Button disabled={loadingUserId===hoverduser.id} onClick={()=>onFollow(hoverduser.id,isFollowing)} className={`w-full cursor-pointer ${
-                    isFollowing
+                <Button disabled={loadingUserId===hoverduser.id} onClick={()=>onFollow(hoverduser.id)} className={`w-full cursor-pointer ${
+                    hoverduser.isFollowing
                       ? "bg-gray-600 text-gray-300 hover:bg-gray-500"
                       : "bg-orange-500 text-white hover:bg-orange-600"
                   }`}>
-                {isFollowing ? "Following" : "Follow"}
+                {hoverduser.isFollowing ? "Following" : "Follow"}
              </Button>
             }
              

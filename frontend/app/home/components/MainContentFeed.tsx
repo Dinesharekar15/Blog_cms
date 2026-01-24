@@ -6,7 +6,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { CldImage } from "next-cloudinary";
 import { useUser } from "@/context/UserContext";
-import { UserHoverCard } from "./UserHoverCard";
+import { UserHoverCard } from "@/app/components/UserHoverCard";
 type Blog = {
   id: string;
   title: string;
@@ -30,54 +30,67 @@ export default function MainContentFeed() {
     unlikeBlog,
     addComment,
     loadComments,
-    loadBlogs
+    loadBlogs,
+    handelFollow,
+    loadingUserId
   } = useBlogs();
   const {user,followUser,unfollowUser}=useUser();
-  const [loadingUserId,setLoadingUserId]=useState<any|null>(null)
 
 
-  const handelFollow=async(userId:number,isFollowing:boolean)=>{
-    if(loadingUserId===userId) return;
-    setLoadingUserId(userId)
-    setBlogs((prev:any) =>
-  prev.map((blog:any) => {
-    if (blog.user.id !== userId) return blog;
+//   const handelFollow=async(userId:number,isFollowing:boolean)=>{
+//     if(loadingUserId===userId) return;
+//     setLoadingUserId(userId)
+//     setBlogs((prev:any) =>
+//   prev.map((blog:any) => {
+//     if (blog.user.id !== userId) return blog;
 
-    return {
-      ...blog,
-      isFollowing: !isFollowing,
-      user: {
-        ...blog.user,
-        _count: {
-          ...blog.user._count,
-          followers: blog.user._count.followers + (isFollowing ? -1 : 1),
-        },
-      },
-    };
-  })
-);
+//     return {
+//       ...blog,
+//       user: {
+//         ...blog.user,
+//         isFollowing: !isFollowing,
+//         _count: {
+//           ...blog.user._count,
+//           followers: blog.user._count.followers + (isFollowing ? -1 : 1),
+//         },
+//       },
+//     };
+//   })
+// );
 
 
-    try {
-  if (isFollowing) {
-    await unfollowUser(userId);
-  } else {
-    await followUser(userId);
-  }
-} catch {
-  // rollback UI if API fails
-  setBlogs((prev:any) =>
-    prev.map((blog:any) =>
-      blog.user.id === userId
-        ? { ...blog, isFollowing }
-        : blog
-    )
-  );
-} finally {
-  setLoadingUserId(null);
-}
+//     try {
+//   if (isFollowing) {
+//     await unfollowUser(userId);
+//   } else {
+//     await followUser(userId);
+//   }
+// } catch {
+//   // rollback UI if API fails
+//   setBlogs((prev: any[]) =>
+//       prev.map((blog: any) => {
+//         if (blog.user.id !== userId) return blog;
 
-  }
+//         return {
+//           ...blog,
+//           user: {
+//             ...blog.user,
+//             isFollowing,
+//             _count: {
+//               ...blog.user._count,
+//               followers:
+//                 blog.user._count.followers + (isFollowing ? 1 : -1),
+//             },
+//           },
+//         };
+//       })
+//     );
+
+// } finally {
+//   setLoadingUserId(null);
+// }
+
+//   }
   return (
     <div className="flex-1 bg-gray-900">
       {/* Scrollable Content Area */}
@@ -99,7 +112,7 @@ export default function MainContentFeed() {
                   <div>
                     <div className="cursor-pointer flex items-center space-x-2">
                       {/* <h3>{blog.user.name}</h3> */}
-                      <UserHoverCard hoverduser={user} onFollow={handelFollow} loadingUserId={loadingUserId} isFollowing={blog.isFollowing}/>
+                      <UserHoverCard hoverduser={blog.user} onFollow={handelFollow} loadingUserId={loadingUserId} />
                     </div>
                     <p className="text-gray-400 text-xs">
                       {blog.user.email} · {timeAgo(blog.createdAt)}{" "}
@@ -110,14 +123,14 @@ export default function MainContentFeed() {
                   blog.user.id!=user?.id && 
                   <button
                   disabled={loadingUserId===blog.user.id}
-                  onClick={()=>{handelFollow(blog.user.id,blog.isFollowing)}}
+                  onClick={()=>{handelFollow(blog.user.id)}}
                   className={` cursor-pointer px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
-                    blog.isFollowing
+                    blog.user.isFollowing
                       ? "bg-gray-600 text-gray-300 hover:bg-gray-500"
                       : "bg-orange-500 text-white hover:bg-orange-600"
                   }`}
                 >
-                  {blog.isFollowing ? "Following" : "Follow"}
+                  {blog.user.isFollowing ? "Following" : "Follow"}
                 </button>
                 }
                 

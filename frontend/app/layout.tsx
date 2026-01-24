@@ -36,12 +36,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+           <UserProvider>
           <BlogProvider>
-            <UserProvider>
-
-            {children}
-            </UserProvider>
+            
+              {children}
+            
           </BlogProvider>
+        </UserProvider>
         </ThemeProvider>
         
       </body>

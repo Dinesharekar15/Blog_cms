@@ -5,7 +5,7 @@ import { useBlogs } from "@/context/BlogContext";
 import { useEffect, useRef, useState } from "react";
 import { CldImage } from "next-cloudinary";
 import { timeAgo } from "@/lib/timeago";
-import { UserHoverCard } from "@/app/home/components/UserHoverCard";
+import { UserHoverCard } from "@/app/components/UserHoverCard";
 export default function BlogDetailPage() {
   const param = useParams() as { blogId: string };
   const id = Number(param.blogId);
@@ -22,7 +22,7 @@ export default function BlogDetailPage() {
     return <p>Invalid blog</p>;
   }
 
-  const { blogs, addComment, comments, loadcommnets, likeBlog, unlikeBlog } =
+  const { blogs, addComment, comments, loadcommnets, likeBlog, unlikeBlog ,handelFollow,loadingUserId} =
     useBlogs();
 
   const blog = blogs.find((b: any) => b.id === id);
@@ -74,8 +74,8 @@ export default function BlogDetailPage() {
                   <div>
                     <div className="cursor-pointer flex items-center space-x-2">
                       <h3 className="text-white font-semibold text-sm hover:text-blue-400 transition-colors duration-200">
-                        {blog.user.name}
-                        {/* <UserHoverCard /> */}
+                        {/* {blog.user.name} */}
+                        <UserHoverCard hoverduser={blog.user} onFollow={handelFollow} loadingUserId={loadingUserId}/>
                       </h3>
                     </div>
                     <p className="text-gray-400 text-xs">
@@ -263,7 +263,7 @@ export default function BlogDetailPage() {
                       </div>
 
                       <p className="text-white text-sm font-semibold cursor-pointer hover:text-blue-400 transition-colors duration-200">
-                        {c.user.name}
+                        <UserHoverCard hoverduser={c.user} onFollow={handelFollow} loadingUserId={loadingUserId}/>
                       </p>
 
                       <p className="text-gray-400 text-xs">
@@ -335,7 +335,7 @@ export default function BlogDetailPage() {
                             </div>
 
                             <p className="text-sm text-white font-semibold cursor-pointer hover:text-blue-400 transition-colors duration-200">
-                              {r.user.name}
+                             <UserHoverCard hoverduser={r.user} onFollow={handelFollow} loadingUserId={loadingUserId}/>
                             </p>
 
                             <p className="text-xs text-gray-400">

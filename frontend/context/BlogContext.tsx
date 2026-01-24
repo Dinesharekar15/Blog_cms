@@ -2,8 +2,20 @@
 
 import { createContext, useState, useEffect, useContext } from "react";
 import { blogService } from "@/services/BlogService";
-
+import { useUser } from "./UserContext";
 const BlogContext = createContext<any>(null);
+export interface BlogUser {
+  id: number;
+  name: string;
+  email: string;
+  isFollowing: boolean;
+  _count: {
+    followers: number;
+    following: number;
+    blogs: number;
+  };
+}
+
 
 export interface Blog {
   id: number;
@@ -12,12 +24,79 @@ export interface Blog {
   imageUrl?: string;
   like: number;
   isLiked: boolean;
+  user: BlogUser;
 }
+
 
 export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [comments, setComments] = useState<Record<number, any[]>>({});
   const [loading, setLoading] = useState(false);
+  const {user,followUser,unfollowUser}=useUser();
+  const [loadingUserId,setLoadingUserId]=useState<any|null>(null)
+
+  const handelFollow = async (userId: number) => {
+  if (loadingUserId === userId) return;
+
+  const currentIsFollowing = blogs.find((b: any) => b.user.id === userId)?.user.isFollowing;
+
+  if (currentIsFollowing === undefined) return;
+
+  setLoadingUserId(userId);
+
+  // optimistic update
+  setBlogs((prev: any[]) =>
+    prev.map((blog: any) => {
+      if (blog.user.id !== userId) return blog;
+
+      return {
+        ...blog,
+        user: {
+          ...blog.user,
+          isFollowing: !currentIsFollowing,
+          _count: {
+            ...blog.user._count,
+            followers:
+              blog.user._count.followers +
+              (currentIsFollowing ? -1 : 1),
+          },
+        },
+      };
+    })
+  );
+
+  try {
+    if (currentIsFollowing) {
+      await unfollowUser(userId);
+    } else {
+      await followUser(userId);
+    }
+  } catch {
+    // rollback
+    setBlogs((prev: any[]) =>
+      prev.map((blog: any) =>
+        blog.user.id === userId
+          ? {
+              ...blog,
+              user: {
+                ...blog.user,
+                isFollowing: currentIsFollowing,
+                _count: {
+                  ...blog.user._count,
+                  followers:
+                    blog.user._count.followers +
+                    (currentIsFollowing ? 1 : -1),
+                },
+              },
+            }
+          : blog
+      )
+    );
+  } finally {
+    setLoadingUserId(null);
+  }
+};
+
 
   const loadBlogs = async () => {
     try {
@@ -91,7 +170,9 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
         unlikeBlog,
         addComment,
         loadcommnets,
-        loadBlogs
+        loadBlogs,
+        loadingUserId,
+        handelFollow
       }}
     >
       {children}

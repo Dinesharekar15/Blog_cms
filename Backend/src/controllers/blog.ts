@@ -115,12 +115,16 @@ const allBlogs = asyncHandler(async (req: CustomRequest, res: Response) => {
   }
 
     const formattedBlog = blogs.map((blog) => ({
-      ...blog,
-      like: blog._count.like,
-      comment: blog._count.comment,
-      isLiked: blog.like?.length > 0,
-      isFollowing:userId ?followingSet.has(blog.user.id):false
-    }));
+  ...blog,
+  like: blog._count.like,
+  comment: blog._count.comment,
+  isLiked: blog.like?.length > 0,
+  user: {
+    ...blog.user,
+    isFollowing: userId ? followingSet.has(blog.user.id) : false,
+  },
+}));
+
     res.status(200).json({ msg: "All Bogs ", formattedBlog });
     return;
   } catch (error: any) {
@@ -263,6 +267,7 @@ const addComment = async (req: CustomRequest, res: Response) => {
 
 const allCommentOfBlog = async (req: CustomRequest, res: Response) => {
   const blogId = Number(req.params.blogId);
+  const loggedInUserId = req.user?.id;
 
   try {
     const comments = await prisma.comment.findMany({
@@ -271,19 +276,89 @@ const allCommentOfBlog = async (req: CustomRequest, res: Response) => {
         parentId: null,
       },
       include: {
-        user: { select: { id: true, name: true } },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            profileImg: true,
+            createdAt: true,
+            _count: {
+              select: {
+                followers: true,
+                following: true,
+                blogs: true,
+              },
+            },
+          },
+        },
         replies: {
           include: {
-            user: { select: { id: true, name: true } },
+            user: {
+              select: {
+                id: true,
+                name: true,
+                profileImg: true,
+                createdAt: true,
+                _count: {
+                  select: {
+                    followers: true,
+                    following: true,
+                    blogs: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    res.status(200).json({ msg: "Comments fetched", comments });
-  } catch (error: any) {
-    console.log(error);
+    // 👇 add isFollowing logic (same as blogs)
+    let followingSet = new Set<number>();
+
+    if (loggedInUserId) {
+      const userIds = [
+        ...comments.map((c) => c.user.id),
+        ...comments.flatMap((c) => c.replies.map((r) => r.user.id)),
+      ];
+
+      const relations = await prisma.follower.findMany({
+        where: {
+          followerId: loggedInUserId,
+          followingId: { in: userIds },
+        },
+        select: { followingId: true },
+      });
+
+      followingSet = new Set(relations.map((r) => r.followingId));
+    }
+
+    const formattedComments = comments.map((comment) => ({
+      ...comment,
+      user: {
+        ...comment.user,
+        isFollowing: loggedInUserId
+          ? followingSet.has(comment.user.id)
+          : false,
+      },
+      replies: comment.replies.map((reply) => ({
+        ...reply,
+        user: {
+          ...reply.user,
+          isFollowing: loggedInUserId
+            ? followingSet.has(reply.user.id)
+            : false,
+        },
+      })),
+    }));
+
+    res.status(200).json({
+      msg: "Comments fetched",
+      comments: formattedComments,
+    });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ msg: "Internal server error" });
   }
 };
