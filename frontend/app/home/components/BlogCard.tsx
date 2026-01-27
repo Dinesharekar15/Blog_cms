@@ -2,95 +2,25 @@
 import { useBlogs } from "@/context/BlogContext";
 import { timeAgo } from "@/lib/timeago";
 import Link from "next/link";
-import axios from "axios";
-import { useEffect, useState } from "react";
 import { CldImage } from "next-cloudinary";
 import { useUser } from "@/context/UserContext";
 import { UserHoverCard } from "@/app/components/UserHoverCard";
-type Blog = {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  userId: number;
-  user: {
-    name: string;
-    email: string;
-  };
-};
 
 
-export default function MainContentFeed() {
+export default function BlogCard() {
   const {
     blogs,
-    setBlogs,
-    comment,
-    loading,
+   
     likeBlog,
     unlikeBlog,
-    addComment,
-    loadComments,
-    loadBlogs,
+  
     handelFollow,
     loadingUserId
   } = useBlogs();
-  const {user,followUser,unfollowUser}=useUser();
+  const {user}=useUser();
 
 
-//   const handelFollow=async(userId:number,isFollowing:boolean)=>{
-//     if(loadingUserId===userId) return;
-//     setLoadingUserId(userId)
-//     setBlogs((prev:any) =>
-//   prev.map((blog:any) => {
-//     if (blog.user.id !== userId) return blog;
 
-//     return {
-//       ...blog,
-//       user: {
-//         ...blog.user,
-//         isFollowing: !isFollowing,
-//         _count: {
-//           ...blog.user._count,
-//           followers: blog.user._count.followers + (isFollowing ? -1 : 1),
-//         },
-//       },
-//     };
-//   })
-// );
-
-
-//     try {
-//   if (isFollowing) {
-//     await unfollowUser(userId);
-//   } else {
-//     await followUser(userId);
-//   }
-// } catch {
-//   // rollback UI if API fails
-//   setBlogs((prev: any[]) =>
-//       prev.map((blog: any) => {
-//         if (blog.user.id !== userId) return blog;
-
-//         return {
-//           ...blog,
-//           user: {
-//             ...blog.user,
-//             isFollowing,
-//             _count: {
-//               ...blog.user._count,
-//               followers:
-//                 blog.user._count.followers + (isFollowing ? 1 : -1),
-//             },
-//           },
-//         };
-//       })
-//     );
-
-// } finally {
-//   setLoadingUserId(null);
-// }
-
-//   }
   return (
     <div className="flex-1 bg-gray-900">
       {/* Scrollable Content Area */}
@@ -109,7 +39,7 @@ export default function MainContentFeed() {
                   <div className="cursor-pointer w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-lg">
                     {blog.user.name.charAt(0).toUpperCase()}
                   </div>
-                  <div>
+                  <div> 
                     <div className="cursor-pointer flex items-center space-x-2">
                       {/* <h3>{blog.user.name}</h3> */}
                       <UserHoverCard hoverduser={blog.user} onFollow={handelFollow} loadingUserId={loadingUserId} />

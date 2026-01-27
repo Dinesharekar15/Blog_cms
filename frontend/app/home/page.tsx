@@ -1,13 +1,13 @@
 'use client'
 
 import HomeLayout from '../components/HomeLayout';
-import MainContentFeed from './components/MainContentFeed';
+import BlogCard from './components/BlogCard';
 
 export default function HomePage() {
   return (
     <HomeLayout>
       {/* Scrollable Content Feed */}
-      <MainContentFeed />
+      <BlogCard />
       
     </HomeLayout>
   );

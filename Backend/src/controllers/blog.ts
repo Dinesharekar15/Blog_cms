@@ -60,7 +60,7 @@ const creatBlog = asyncHandler(async (req: CustomRequest, res: Response) => {
   }
 });
 //for home page
-const allBlogs = asyncHandler(async (req: CustomRequest, res: Response) => {
+const d allBlogs = asyncHandler(async (req: CustomRequest, res: Response) => {
   const userId = Number(req.user?.id);
   try {
     const blogs = await prisma.blog.findMany({
