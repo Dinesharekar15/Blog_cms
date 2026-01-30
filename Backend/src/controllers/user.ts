@@ -299,7 +299,6 @@ const getUserFollowings = async (req: CustomRequest, res: Response) => {
   } catch (error) {
         console.error(error);
     return res.status(500).json({ msg: "Internal Server Error" });
-
   }
 };
 
