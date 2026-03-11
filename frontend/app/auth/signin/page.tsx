@@ -8,47 +8,48 @@ import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import SocialButton from '../../components/ui/SocialButton';
 import axios from 'axios';
-import { emitWarning } from 'process';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@/context/UserContext';
 
 export default function SignInPage() {
-  const router=useRouter()
-  const [loading,setLoading]=useState(false)
-  const backend_url=process.env.NEXT_PUBLIC_BACKEND_URL;
-  const initialformData={
-    email:'',
-    password:''
-  }
+  const router = useRouter()
+  const { refreshUser } = useUser()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const backend_url = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+  const initialformData = { email: '', password: '' }
   const [formData, setFormData] = useState(initialformData);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError('')
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async(e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true)
-    const data={
-        email:formData.email,
-        password:formData.password
-      }
+    setError('')
+    setSuccess('')
+
     try {
-      const response=await axios.post(`${backend_url}/auth/signin`,data,{withCredentials:true}
-    )
-      console.log(response.data.msg)
-      if(response.status==201){
-        alert(response.data.msg)
-        router.push("/home")
-        router.refresh();
-      }
+      const response = await axios.post(
+        `${backend_url}/auth/signin`,
+        { email: formData.email, password: formData.password },
+        { withCredentials: true }
+      )
+
+      setSuccess(response.data.msg || 'Login successful! Redirecting…')
+      await refreshUser()
       setFormData(initialformData)
-    } catch (error:any) {
-      console.log(error.response.data)
-    }finally{
+      setTimeout(() => router.push('/home'), 800)
+
+    } catch (err: any) {
+      const msg = err?.response?.data?.msg || 'Something went wrong. Please try again.'
+      setError(msg)
+    } finally {
       setLoading(false)
     }
   };
@@ -58,12 +59,28 @@ export default function SignInPage() {
   };
 
   return (
-    <PageLayout 
-      title="Welcome Back" 
+    <PageLayout
+      title="Welcome Back"
       subtitle="It's good to see you again"
     >
       <FormCard>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Error Banner */}
+          {error && (
+            <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              <span>⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Success Banner */}
+          {success && (
+            <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
+              <span>✅</span>
+              <span>{success}</span>
+            </div>
+          )}
+
           <Input
             label="Email Address"
             type="email"
@@ -86,8 +103,8 @@ export default function SignInPage() {
               required
             />
             <div className="mt-2 text-right">
-              <Link 
-                href="/forgot-password" 
+              <Link
+                href="/forgot-password"
                 className="text-sm text-orange-500 hover:text-orange-600 transition-colors duration-200 cursor-pointer"
               >
                 Forgot Password?
@@ -112,16 +129,16 @@ export default function SignInPage() {
           </div>
 
           <Button type="submit" variant="primary" className="w-full" disabled={loading}>
-            {loading?"Loading...":"Sign In"}
+            {loading ? 'Signing in…' : 'Sign In'}
           </Button>
         </form>
       </FormCard>
 
       <div className="text-center mt-6">
         <p className="text-gray-600">
-          Don't have an account?{' '}
-          <Link 
-            href="/auth/signup" 
+          Don&apos;t have an account?{' '}
+          <Link
+            href="/auth/signup"
             className="font-semibold text-orange-500 hover:text-orange-600 transition-colors duration-200"
           >
             Sign Up

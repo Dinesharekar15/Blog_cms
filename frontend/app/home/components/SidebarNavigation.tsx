@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useRef, useEffect, use } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import axios from 'axios';
 import { useUser } from '@/context/UserContext';
 
 interface SidebarNavigationProps {
@@ -24,7 +23,7 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
   const router = useRouter();
   const pathname = usePathname();
   // const [user,setUser]= useState<user|null>(null);
-  const{user}=useUser();
+  const { user, signout } = useUser();
   // Update active navigation based on current route
   useEffect(() => {
     if (pathname === '/home') {
@@ -87,17 +86,17 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
     }
   };
 
-  const handleProfileMenuClick = (itemId: string) => {
+  const handleProfileMenuClick = async (itemId: string) => {
     if (itemId === 'sign-out') {
-      // Handle sign out logic
-      console.log('Signing out...');
       setIsProfileOpen(false);
+      await signout();
     } else if (itemId === 'appearance') {
-      // Toggle appearance dropdown
       setIsAppearanceOpen(!isAppearanceOpen);
       return;
+    } else if (itemId === 'view-profile' && user) {
+      router.push(`/profile/${user.id}`);
+      setIsProfileOpen(false);
     } else {
-      // Handle other menu item clicks
       console.log(`Clicked: ${itemId}`);
       setIsProfileOpen(false);
     }
@@ -109,8 +108,7 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
     console.log(`Theme changed to: ${theme}`);
     // Don't close the dropdown - let user click "Appearance" to close it
   };
-  const backend_url=process.env.NEXT_PUBLIC_BACKEND_URL;
-  
+
   return (
     <div className="bg-gray-900 text-white w-64 md:w-16 lg:w-64 h-screen flex-col fixed left-0 top-0 z-40 hidden md:flex">
       {/* Logo Section */}

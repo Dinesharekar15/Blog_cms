@@ -1,10 +1,11 @@
-import exress from 'express'
-import {signUp,signIn} from '../controllers/auth.js'
+import express from 'express'
+import { signUp, signIn, signOut, refresh } from '../controllers/auth.js'
 
- const router =exress.Router()
+const router = express.Router()
 
+router.post('/signup', signUp)
+router.post('/signin', signIn)
+router.post('/signout', signOut)
+router.post('/refresh', refresh)
 
- router.post('/signup',signUp)
- router.post('/signin',signIn)
-
- export default router
+export default router
