@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link';
+
 export default function HeroSection() {
   return (
     <section className="relative overflow-hidden">
@@ -24,9 +26,9 @@ export default function HeroSection() {
             
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 mb-8 justify-center lg:justify-start">
-              <button className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold px-8 py-4 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+              <Link href="/auth/signup" className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold px-8 py-4 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg inline-block text-center">
                 Start Your Blog
-              </button>
+              </Link>
               <button className="border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-semibold px-8 py-4 rounded-full text-lg transition-all duration-300 hover:bg-gray-50">
                 See Features
               </button>

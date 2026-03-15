@@ -75,7 +75,9 @@ const mockSearchResults = [
   }
 ];
 
-export default function SearchPage() {
+import { Suspense } from 'react';
+
+function SearchContent() {
   const [query, setQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('top');
   const [filteredResults, setFilteredResults] = useState(mockSearchResults);
@@ -119,6 +121,7 @@ export default function SearchPage() {
     router.push(`/search?q=${encodeURIComponent(query)}&filter=${filterId}`);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderSearchResult = (result: any) => {
     if (result.type === 'post') {
       return (
@@ -216,7 +219,7 @@ export default function SearchPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-4 md:p-6 lg:p-8">
@@ -264,7 +267,7 @@ export default function SearchPage() {
                 <div className="mb-6">
                   <p className="text-gray-400">
                     Found <span className="text-white font-medium">{filteredResults.length}</span> results for 
-                    <span className="text-purple-400 font-medium"> "{query}"</span>
+                    <span className="text-purple-400 font-medium"> &quot;{query}&quot;</span>
                   </p>
                 </div>
               )}
@@ -286,6 +289,16 @@ export default function SearchPage() {
             </div>
           </div>
         </div>
-    </DashboardLayout>
+    </>
   );
+}
+
+export default function SearchPage() {
+  return (
+    <DashboardLayout>
+      <Suspense fallback={<div className="flex justify-center items-center h-screen text-gray-400">Loading search...</div>}>
+         <SearchContent />
+      </Suspense>
+    </DashboardLayout>
+  )
 }

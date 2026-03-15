@@ -19,7 +19,6 @@ export default function SignUpPage() {
 
   const initialformData = { name: "", email: "", password: "" }
   const [formData, setFormData] = useState(initialformData);
-  const [passwordFocus, setPasswordFocus] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setError('')
@@ -59,6 +58,7 @@ export default function SignUpPage() {
       setFormData(initialformData)
       setTimeout(() => router.push('/home'), 800)
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const msg = err?.response?.data?.msg || 'Something went wrong. Please try again.'
       setError(msg)
@@ -124,8 +124,6 @@ export default function SignUpPage() {
               name="password"
               value={formData.password}
               onChange={handleInputChange}
-              onFocus={() => setPasswordFocus(true)}
-              onBlur={() => setPasswordFocus(false)}
               placeholder="Create a strong password (min 6 chars)"
               showPasswordToggle={true}
               required

@@ -35,6 +35,7 @@ export default function BlogCard() {
             <div className="text-center text-gray-400 py-12">Loading blogs…</div>
           )}
 
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {blogs.map((blog: any) => (
             <article
               key={blog.id}
@@ -102,7 +103,7 @@ export default function BlogCard() {
               <div className="flex items-center justify-between pt-4 border-t border-none">
                 <div className="flex items-center space-x-6">
                   <button
-                    onClick={() => { blog.isLiked ? unlikeBlog(blog.id) : likeBlog(blog.id) }}
+                    onClick={() => blog.isLiked ? unlikeBlog(blog.id) : likeBlog(blog.id)}
                     className="flex items-center space-x-2 text-gray-400 hover:text-red-500 transition-colors duration-200"
                   >
                     <svg
@@ -165,7 +166,7 @@ export default function BlogCard() {
           )}
 
           {!hasMore && blogs.length > 0 && (
-            <p className="text-center text-gray-500 text-sm py-6">You've reached the end 🎉</p>
+            <p className="text-center text-gray-500 text-sm py-6">You&apos;ve reached the end 🎉</p>
           )}
         </div>
       </div>

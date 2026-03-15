@@ -37,7 +37,7 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const { user, followUser, unfollowUser } = useUser();
+  const { user, followUser, unfollowUser, isAuthenticated } = useUser();
   const [loadingUserId, setLoadingUserId] = useState<any | null>(null);
 
   const hasMore = page < totalPages;
@@ -164,7 +164,7 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     loadBlogs();
-  }, []);
+  }, [isAuthenticated]);
 
   return (
     <BlogContext.Provider

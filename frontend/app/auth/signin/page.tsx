@@ -6,7 +6,6 @@ import PageLayout from '../../components/ui/PageLayout';
 import FormCard from '../../components/ui/FormCard';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
-import SocialButton from '../../components/ui/SocialButton';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
@@ -46,6 +45,7 @@ export default function SignInPage() {
       setFormData(initialformData)
       setTimeout(() => router.push('/home'), 800)
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const msg = err?.response?.data?.msg || 'Something went wrong. Please try again.'
       setError(msg)
@@ -54,9 +54,7 @@ export default function SignInPage() {
     }
   };
 
-  const handleSocialSignIn = (provider: string) => {
-    console.log(`Sign in with ${provider}`);
-  };
+
 
   return (
     <PageLayout
@@ -112,21 +110,7 @@ export default function SignInPage() {
             </div>
           </div>
 
-          <div className="space-y-3">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <SocialButton provider="Google" onClick={handleSocialSignIn} />
-              <SocialButton provider="Apple" onClick={handleSocialSignIn} />
-            </div>
-          </div>
 
           <Button type="submit" variant="primary" className="w-full" disabled={loading}>
             {loading ? 'Signing in…' : 'Sign In'}

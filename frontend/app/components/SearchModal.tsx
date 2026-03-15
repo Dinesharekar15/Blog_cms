@@ -217,7 +217,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     className="flex items-center w-full p-2 text-left text-white hover:bg-purple-600/20 rounded-lg transition-colors group border border-purple-500/30"
                   >
                     <SearchIcon className="w-4 h-4 text-purple-400 mr-3 flex-shrink-0" />
-                    <span>Search for "<span className="text-purple-400">{query}</span>"</span>
+                    <span>Search for &quot;<span className="text-purple-400">{query}</span>&quot;</span>
                   </button>
                 </div>
               </div>

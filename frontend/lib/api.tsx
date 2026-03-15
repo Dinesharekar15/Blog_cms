@@ -30,9 +30,12 @@ api.interceptors.response.use(
         // Retry the original failed request with the new access token cookie
         return api(originalRequest);
       } catch {
-        // Refresh failed — redirect to sign in
+        // Refresh failed — redirect to sign in only if not on a public page
         if (typeof window !== "undefined") {
-          window.location.href = "/auth/signin";
+          const publicPaths = ["/", "/auth/signin", "/auth/signup"];
+          if (!publicPaths.includes(window.location.pathname)) {
+            window.location.href = "/auth/signin";
+          }
         }
       }
     }

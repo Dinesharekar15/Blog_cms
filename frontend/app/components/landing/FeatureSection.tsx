@@ -1,4 +1,5 @@
 import MobileScreenshot from './MobileScreenshot';
+import Link from 'next/link';
 
 export default function FeatureSection() {
   return (
@@ -54,9 +55,9 @@ export default function FeatureSection() {
               </p>
               
               {/* CTA Button */}
-              <button className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold px-8 py-4 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+              <Link href="/auth/signup" className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold px-8 py-4 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg inline-block text-center">
                 Start exploring in the app
-              </button>
+              </Link>
             </div>
           </div>
         </div>

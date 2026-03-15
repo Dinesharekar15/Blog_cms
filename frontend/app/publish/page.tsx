@@ -3,7 +3,7 @@
 import { useState } from "react";
 import TiptapEditor from "./components/TiptapEditor";
 import axios from "axios";
-import { headers } from "next/headers";
+
 import { useRouter } from "next/navigation";
 import ImageUploader from "./components/ImageUploader";
 
@@ -38,7 +38,7 @@ export default function PublishPage() {
       setLoading(true);
       setMessage("");
       setError(false);
-      const res = await axios.post(`${backend_url}/blog/publish`, formData, {
+      await axios.post(`${backend_url}/blog/publish`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -49,6 +49,7 @@ export default function PublishPage() {
       setTimeout(() => {
         router.push("/home");
       }, 2000);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setError(true);
       console.log(error);

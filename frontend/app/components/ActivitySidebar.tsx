@@ -257,7 +257,7 @@ export default function ActivitySidebar({ isOpen, onClose }: ActivitySidebarProp
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">No activity yet</h3>
               <p className="text-gray-400 text-sm max-w-xs">
-                When people interact with your content, you'll see their activity here
+                When people interact with your content, you&apos;ll see their activity here
               </p>
             </div>
           ) : (

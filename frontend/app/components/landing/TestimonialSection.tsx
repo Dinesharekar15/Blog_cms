@@ -43,8 +43,8 @@ export default function TestimonialSection() {
 
             {/* Testimonial Quote */}
             <blockquote className="text-xl sm:text-2xl lg:text-3xl font-bold text-white leading-relaxed mb-8">
-              "This platform has transformed how I share my stories. The community is incredible, 
-              and the tools make publishing effortless. My audience has grown 300% in just 6 months!"
+              &quot;This platform has transformed how I share my stories. The community is incredible, 
+              and the tools make publishing effortless. My audience has grown 300% in just 6 months!&quot;
             </blockquote>
 
             {/* Attribution */}
@@ -56,7 +56,7 @@ export default function TestimonialSection() {
               
               {/* Subscribe Button */}
               <button className="bg-gradient-to-r from-purple-400 to-purple-300 hover:from-purple-300 hover:to-purple-200 text-purple-900 font-semibold px-6 py-3 rounded-full text-base transition-all duration-300 transform hover:scale-105 shadow-lg">
-                Subscribe to Sarah's Newsletter
+                Subscribe to Sarah&apos;s Newsletter
               </button>
             </div>
 

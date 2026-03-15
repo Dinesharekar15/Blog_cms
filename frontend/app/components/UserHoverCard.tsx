@@ -11,9 +11,9 @@ import { useUser } from "@/context/UserContext";
 import { useBlogs } from "@/context/BlogContext";
 import { useState } from "react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function UserHoverCard({ hoverduser,onFollow,loadingUserId}: { hoverduser: any,onFollow:(userId:number)=>void,loadingUserId:number|null} ) {
-    const {user,followUser,unfollowUser}=useUser();
-    const {blogs,setBlogs}=useBlogs();
+    const {user}=useUser();
     
   return (
     <HoverCard>

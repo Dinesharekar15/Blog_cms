@@ -3,7 +3,7 @@ interface ContentCardProps {
   variant?: 'default' | 'compact';
 }
 
-export default function ContentCard({ className = '', variant = 'default' }: ContentCardProps) {
+export default function ContentCard({ className = '' }: ContentCardProps) {
   return (
     <div className={`bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-4 sm:p-6 max-w-sm ${className}`}>
       {/* Header Section */}
@@ -47,7 +47,7 @@ export default function ContentCard({ className = '', variant = 'default' }: Con
           </div>
         </div>
         <p className="text-xs text-gray-600 mt-2">
-          "The Creator Economy Revolution: What's Next?"
+          &quot;The Creator Economy Revolution: What&apos;s Next?&quot;
         </p>
       </div>
 

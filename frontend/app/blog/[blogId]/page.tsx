@@ -18,21 +18,23 @@ export default function BlogDetailPage() {
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState("");
 
+  const { blogs, addComment, comments, loadcommnets, likeBlog, unlikeBlog ,handelFollow,loadingUserId} =
+    useBlogs();
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    loadcommnets(id);
+  }, [id]);
+
   if (isNaN(id)) {
     return <p>Invalid blog</p>;
   }
 
-  const { blogs, addComment, comments, loadcommnets, likeBlog, unlikeBlog ,handelFollow,loadingUserId} =
-    useBlogs();
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const blog = blogs.find((b: any) => b.id === id);
   console.log("Blog:", blog);
   const blogComment = comments[id] || [];
   console.log("comments:", blogComment);
-
-  useEffect(() => {
-    loadcommnets(id);
-  }, [id]);
 
   if (!blog) return <p>Loading...</p>;
 
@@ -117,11 +119,7 @@ export default function BlogDetailPage() {
               <div className="flex items-center justify-between pt-4 border-t border-none">
                 <div className="flex items-center space-x-6">
                   <button
-                    onClick={() => {
-                      {
-                        blog.isLiked ? unlikeBlog(blog.id) : likeBlog(blog.id);
-                      }
-                    }}
+                    onClick={() => blog.isLiked ? unlikeBlog(blog.id) : likeBlog(blog.id)}
                     className="flex items-center space-x-2 text-gray-400 hover:text-red-500  transition-colors duration-200 "
                   >
                     <svg
@@ -254,6 +252,7 @@ export default function BlogDetailPage() {
               </div>
               {/* Comments */}
               <div className="mt-8 space-y-6">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {blogComment.map((c: any) => (
                   <div key={c.id} className="space-y-2">
                     {/* Avatar + Name + Time in one row */}
@@ -327,6 +326,7 @@ export default function BlogDetailPage() {
 
                     {/* Replies */}
                     <div className="ml-12 mt-4 space-y-4">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       {c.replies.map((r: any) => (
                         <div key={r.id} className="space-y-1">
                           <div className="flex items-center space-x-3">
