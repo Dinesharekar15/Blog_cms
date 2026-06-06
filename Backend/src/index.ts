@@ -5,6 +5,8 @@ import blogRoutes from "./routes/blogRoutes.js"
 import userRoutes from "./routes/userRoutes.js"
 import cookieParser from 'cookie-parser'
 import type { Response,Request } from "express"
+import dotenv from 'dotenv'
+dotenv.config()
 const app =express()
 app.use(express.json())
 app.use(cookieParser())

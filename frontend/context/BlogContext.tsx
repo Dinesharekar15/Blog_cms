@@ -7,7 +7,7 @@ import { useUser } from "./UserContext";
 const BlogContext = createContext<any>(null);
 
 export interface BlogUser {
-  id: number;
+  id: number;     
   name: string;
   email: string;
   isFollowing: boolean;

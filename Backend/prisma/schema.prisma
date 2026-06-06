@@ -27,6 +27,10 @@ model User {
   refreshToken        String?   @unique
   refreshTokenExpiry  DateTime?
 
+  isVerified          Boolean   @default(false)
+  otpHash             String?
+  otpExpiry           DateTime?
+
   followers   Follower[]@relation("userFollowers")
   following   Follower[]@relation("userFollowing")
   
@@ -101,7 +105,7 @@ model Like{
 
   blogId  Int
   blog   Blog @relation(fields: [blogId],references: [id])
-
+  
 
   @@unique([blogId,userId])
 }

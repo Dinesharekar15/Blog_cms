@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { CldImage } from "next-cloudinary";
 import { timeAgo } from "@/lib/timeago";
 import { UserHoverCard } from "@/app/components/UserHoverCard";
+import Link from "next/link";
+import { getProfileImageUrl } from "@/lib/cloudinary";
 export default function BlogDetailPage() {
   const param = useParams() as { blogId: string };
   const id = Number(param.blogId);
@@ -58,7 +60,7 @@ export default function BlogDetailPage() {
   };
 
   return (
-    <HomeLayout>
+    <HomeLayout showSidebar={false}>
       <div className="flex-1 bg-gray-900">
         {/* Scrollable Content Area */}
         <div className="h-screen overflow-y-auto scrollbar-auto-hide">
@@ -70,9 +72,16 @@ export default function BlogDetailPage() {
               {/* Author Header */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <div className="cursor-pointer w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-lg">
-                    {blog.user.name.charAt(0).toUpperCase()}
-                  </div>
+                  <Link href={`/profile/${blog.user.id}`} className="flex-shrink-0">
+                    <div className="cursor-pointer w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
+                      {getProfileImageUrl(blog.user.profileImg) ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={getProfileImageUrl(blog.user.profileImg)!} alt={blog.user.name} className="w-full h-full object-cover" />
+                      ) : (
+                        blog.user.name.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                  </Link>
                   <div>
                     <div className="cursor-pointer flex items-center space-x-2">
                       <h3 className="text-white font-semibold text-sm hover:text-blue-400 transition-colors duration-200">
@@ -100,15 +109,14 @@ export default function BlogDetailPage() {
                 {/* Content Image/Media */}
                 <div>
                   {blog.imageUrl && (
-                    <div className="w-full  bg-gray-700 rounded-lg  mb-4">
+                    <div className="w-full rounded-xl overflow-hidden mb-4">
                       <CldImage
                         src={blog.imageUrl}
-                        width={800}
-                        height={800}
-                        crop="fill"
-                        gravity="center"
+                        width={1200}
+                        height={900}
+                        crop="limit"
                         alt={blog.title}
-                        className="rounded-lg"
+                        className="w-full h-auto object-contain"
                       />
                     </div>
                   )}

@@ -8,7 +8,6 @@ export default function HomePage() {
     <HomeLayout>
       {/* Scrollable Content Feed */}
       <BlogCard />
-      
     </HomeLayout>
   );
 }

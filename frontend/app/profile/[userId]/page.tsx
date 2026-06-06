@@ -8,6 +8,7 @@ import Link from "next/link";
 import DOMPurify from "dompurify";
 import { userService } from "@/services/UserService";
 import { timeAgo } from "@/lib/timeago";
+import { getProfileImageUrl } from "@/lib/cloudinary";
 
 type Tab = "posts" | "followers" | "following";
 
@@ -132,7 +133,7 @@ export default function ProfilePage() {
 
   if (loading || !profile) {
     return (
-      <HomeLayout>
+      <HomeLayout showSidebar={false}>
         <div className="flex justify-center items-center h-screen text-gray-400">
           Loading profile…
         </div>
@@ -147,25 +148,31 @@ export default function ProfilePage() {
     }`;
 
   return (
-    <HomeLayout>
-      <div className="max-w-3xl mx-auto px-4 py-10">
+    <HomeLayout showSidebar={false}>
+      <div className="overflow-y-auto h-full">
+        <div className="w-full max-w-3xl mx-auto px-4 py-10">
 
         {/* ── PROFILE HEADER ────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
           {/* Avatar */}
-          <div className="w-24 h-24 shrink-0 rounded-full bg-gradient-to-br from-orange-500 to-pink-500 flex items-center justify-center text-4xl font-bold text-white shadow-lg">
-            {profile.name.charAt(0).toUpperCase()}
+          <div className="w-24 h-24 shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-orange-500 to-pink-500 flex items-center justify-center text-4xl font-bold text-white shadow-lg">
+            {getProfileImageUrl(profile.profileImg) ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={getProfileImageUrl(profile.profileImg)!} alt={profile.name} className="w-full h-full object-cover" />
+            ) : (
+              profile.name.charAt(0).toUpperCase()
+            )}
           </div>
 
-          {/* Info */}
-          <div className="flex-1 text-center sm:text-left">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-2">
+          {/* Info — always full width so stats row doesn't shrink */}
+          <div className="flex-1 min-w-0 w-full text-center sm:text-left">
+            <div className="flex flex-col justify-between sm:flex-row sm:items-center gap-3 sm:gap-4 mb-2">
               <h1 className="text-2xl font-bold text-white">{profile.name}</h1>
 
               {/* Follow / Edit button */}
               {isOwnProfile ? (
                 <button
-                  onClick={() => router.push("/settings/profile")}
+                  onClick={() => router.push("/profile/edit")}
                   className="px-5 py-1.5 rounded-full border border-gray-500 text-sm text-gray-300 hover:border-white hover:text-white transition-all"
                 >
                   Edit Profile
@@ -175,8 +182,8 @@ export default function ProfilePage() {
                   onClick={handleFollow}
                   disabled={followLoading}
                   className={`px-5 py-1.5 rounded-full text-sm font-semibold transition-all disabled:opacity-50 ${profile.isFollowing
-                      ? "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-500"
-                      : "bg-orange-500 text-white hover:bg-orange-600"
+                    ? "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-500"
+                    : "bg-orange-500 text-white hover:bg-orange-600"
                     }`}
                 >
                   {followLoading ? "…" : profile.isFollowing ? "Following" : "Follow"}
@@ -233,15 +240,14 @@ export default function ProfilePage() {
                       dangerouslySetInnerHTML={{ __html: sanitize(blog.description) }}
                     />
                     {blog.imageUrl && (
-                      <div className="w-full h-44 bg-gray-700 rounded-lg overflow-hidden mb-3">
+                      <div className="w-full rounded-lg overflow-hidden mb-3">
                         <CldImage
                           src={blog.imageUrl}
-                          width={800}
-                          height={300}
-                          crop="fill"
-                          gravity="center"
+                          width={1200}
+                          height={900}
+                          crop="limit"
                           alt={blog.title}
-                          className="w-full h-full object-cover"
+                          className="w-full h-auto max-h-64 object-contain"
                         />
                       </div>
                     )}
@@ -297,6 +303,7 @@ export default function ProfilePage() {
           </div>
         )}
 
+        </div>
       </div>
     </HomeLayout>
   );
@@ -315,10 +322,18 @@ function UserRow({ person, currentUser, onProfileClick }: {
 
   return (
     <div className="flex items-center gap-4 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 hover:border-gray-600 transition-all">
-      {/* Avatar */}
-      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-pink-500 flex items-center justify-center font-bold text-white shrink-0">
-        {person.name?.charAt(0).toUpperCase()}
-      </div>
+      {/* Avatar — clickable to profile */}
+      <button
+        onClick={() => onProfileClick(person.id)}
+        className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-orange-500 to-pink-500"
+      >
+        {getProfileImageUrl(person.profileImg) ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={getProfileImageUrl(person.profileImg)!} alt={person.name} className="w-full h-full object-cover" />
+        ) : (
+          <span className="font-bold text-white">{person.name?.charAt(0).toUpperCase()}</span>
+        )}
+      </button>
 
       {/* Info */}
       <div className="flex-1 min-w-0">

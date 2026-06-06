@@ -3,17 +3,17 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
+import { getProfileImageUrl } from '@/lib/cloudinary';
 
 interface SidebarNavigationProps {
   onActivityClick?: () => void;
   isActivityOpen?: boolean;
-  onSearchClick?: () => void;
 }
-type  user={
-  name:string,
-  email:string,
+type user = {
+  name: string,
+  email: string,
 }
-export default function SidebarNavigation({ onActivityClick, isActivityOpen, onSearchClick }: SidebarNavigationProps) {
+export default function SidebarNavigation({ onActivityClick, isActivityOpen }: SidebarNavigationProps) {
   const [activeNav, setActiveNav] = useState('home');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isAppearanceOpen, setIsAppearanceOpen] = useState(false);
@@ -59,14 +59,13 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
     { id: 'home', label: 'Home', icon: '🏠' },
     { id: 'chat', label: 'Chat', icon: '💬' },
     { id: 'activity', label: 'Activity', icon: '📊' },
-    { id: 'search', label: 'Search', icon: '🔍' },
-    
   ];
 
   const profileMenuItems = [
     {
       section: 'settings',
       items: [
+        { id: 'edit-profile', label: 'Edit Profile', icon: '✏️' },
         { id: 'appearance', label: 'Appearance', icon: '🎨' }
       ]
     }
@@ -96,6 +95,9 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
     } else if (itemId === 'view-profile' && user) {
       router.push(`/profile/${user.id}`);
       setIsProfileOpen(false);
+    } else if (itemId === 'edit-profile') {
+      router.push('/profile/edit');
+      setIsProfileOpen(false);
     } else {
       console.log(`Clicked: ${itemId}`);
       setIsProfileOpen(false);
@@ -110,16 +112,11 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
   };
 
   return (
-    <div className="bg-gray-900 text-white w-64 md:w-16 lg:w-64 h-screen flex-col fixed left-0 top-0 z-40 hidden md:flex">
+    <div
+      className="bg-gray-900 text-white w-64 md:w-16 lg:w-64 flex-col fixed left-0 top-14 z-40 hidden md:flex"
+      style={{ height: 'calc(100vh - 56px)' }}
+    >
       {/* Logo Section */}
-      <div className=" p-6 md:p-4 lg:p-6 border-b border-gray-800">
-        <div className="flex items-center space-x-3 md:justify-center lg:justify-start">
-          <div className=" cursor-pointer w-10 h-10 bg-gradient-to-r from-orange-500 to-pink-500 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-xl">C</span>
-          </div>
-          <span className="text-xl font-bold md:hidden lg:block">CreatorCMS</span>
-        </div>
-      </div>
 
       {/* Navigation Links */}
       <nav className="flex-1 py-6">
@@ -139,21 +136,16 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
                     setActiveNav(item.id);
                     router.push('/dashboard');
                   } else if (item.id === 'activity' && onActivityClick) {
-                    // Don't set activeNav for activity - it should be based on route only
                     onActivityClick();
-                  } else if (item.id === 'search' && onSearchClick) {
-                    // Don't set activeNav for search - it opens a modal
-                    onSearchClick();
                   } else {
                     setActiveNav(item.id);
                   }
                   // Add more navigation cases as needed
                 }}
-                className={`w-full flex items-center space-x-3 md:justify-center lg:justify-start md:space-x-0 lg:space-x-3 px-4 md:px-2 lg:px-4 py-3 rounded-lg text-left md:text-center lg:text-left transition-all duration-200 cursor-pointer group relative ${
-                  (item.id === 'activity' && isActivityOpen) || (item.id !== 'activity' && activeNav === item.id)
+                className={`w-full flex items-center space-x-3 md:justify-center lg:justify-start md:space-x-0 lg:space-x-3 px-4 md:px-2 lg:px-4 py-3 rounded-lg text-left md:text-center lg:text-left transition-all duration-200 cursor-pointer group relative ${(item.id === 'activity' && isActivityOpen) || (item.id !== 'activity' && activeNav === item.id)
                     ? 'bg-gray-800 text-white'
                     : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                }`}
+                  }`}
                 title={item.label} // Tooltip for icon-only mode
               >
                 <span className="text-xl">{item.icon}</span>
@@ -169,7 +161,7 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
 
         {/* Create Button */}
         <div className="px-4 md:px-2 lg:px-4 mt-8">
-          <button 
+          <button
             onClick={handleCreateClick}
             className="w-full text-xl bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold py-3 px-6 md:px-2 lg:px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer group relative flex items-center justify-center"
             title="Create"
@@ -186,13 +178,20 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
 
       {/* User Profile Section */}
       <div className="relative p-4 md:p-2 lg:p-4 border-t border-gray-800" ref={profileRef}>
-        <button 
+        <button
           onClick={handleProfileClick}
           className="w-full flex items-center space-x-3 md:justify-center lg:justify-start md:space-x-0 lg:space-x-3 hover:bg-gray-800 rounded-lg p-2 transition-colors duration-200 cursor-pointer group relative"
           title="Profile"
         >
-          <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
-            <span className="text-white font-semibold">  {user?.name.charAt(0).toUpperCase()||""}</span>
+          <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+            {getProfileImageUrl(user?.profileImg) ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={getProfileImageUrl(user?.profileImg)!} alt={user?.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
+                <span className="text-white font-semibold">{user?.name.charAt(0).toUpperCase() || ""}</span>
+              </div>
+            )}
           </div>
           <div className="flex-1 min-w-0 text-left md:hidden lg:block">
             <p className="text-sm font-medium text-white truncate">{user?.name}</p>
@@ -215,12 +214,19 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
             {/* Header */}
             <div className="p-4 border-b border-gray-700">
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">{user?.name.charAt(0).toUpperCase()}</span>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {getProfileImageUrl(user?.profileImg) ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={getProfileImageUrl(user?.profileImg)!} alt={user?.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">{user?.name.charAt(0).toUpperCase()}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1">
                   <p className="text-white font-semibold">{user?.name}</p>
-                  <button 
+                  <button
                     className="text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 cursor-pointer"
                     onClick={() => handleProfileMenuClick('view-profile')}
                   >
@@ -241,25 +247,23 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
                           <div>
                             <button
                               onClick={() => handleProfileMenuClick(item.id)}
-                              className={`w-full flex items-center space-x-3 px-4 py-2 text-left transition-colors duration-200 cursor-pointer ${
-                                isAppearanceOpen 
-                                  ? 'bg-gray-700 text-white' 
+                              className={`w-full flex items-center space-x-3 px-4 py-2 text-left transition-colors duration-200 cursor-pointer ${isAppearanceOpen
+                                  ? 'bg-gray-700 text-white'
                                   : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                              }`}
+                                }`}
                             >
                               <span className="text-lg">{item.icon}</span>
                               <span className="text-sm font-medium">{item.label}</span>
-                              <svg 
-                                className={`w-4 h-4 ml-auto text-gray-400 transition-transform duration-200 ${
-                                  isAppearanceOpen ? 'rotate-90' : ''
-                                }`} 
-                                fill="currentColor" 
+                              <svg
+                                className={`w-4 h-4 ml-auto text-gray-400 transition-transform duration-200 ${isAppearanceOpen ? 'rotate-90' : ''
+                                  }`}
+                                fill="currentColor"
                                 viewBox="0 0 20 20"
                               >
                                 <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                               </svg>
                             </button>
-                            
+
                             {/* Theme Options Below Appearance */}
                             {isAppearanceOpen && (
                               <div className="ml-4 mt-1 space-y-1">
@@ -271,11 +275,10 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
                                   <button
                                     key={themeOption.id}
                                     onClick={() => handleThemeChange(themeOption.id as 'auto' | 'light' | 'dark')}
-                                    className={`w-full flex items-center space-x-3 px-4 py-2 text-left text-sm rounded-md transition-colors duration-200 cursor-pointer ${
-                                      currentTheme === themeOption.id
+                                    className={`w-full flex items-center space-x-3 px-4 py-2 text-left text-sm rounded-md transition-colors duration-200 cursor-pointer ${currentTheme === themeOption.id
                                         ? 'bg-gray-600 text-white font-semibold'
                                         : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                                    }`}
+                                      }`}
                                   >
                                     <span className="text-base">{themeOption.icon}</span>
                                     <span className="flex-1">{themeOption.label}</span>
@@ -303,7 +306,7 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen, onS
                   </div>
                 </div>
               ))}
-              
+
               {/* Sign Out (Special styling) */}
               <div className="border-t border-gray-700">
                 <button

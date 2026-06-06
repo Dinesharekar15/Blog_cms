@@ -1,303 +1,298 @@
 'use client'
 
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import DashboardLayout from '../components/DashboardLayout';
-import { SearchIcon, EyeIcon, ThumbUpIcon, ChatIcon, UserGroupIcon } from '@heroicons/react/outline';
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import DashboardLayout from '../components/DashboardLayout'
+import { api } from '@/lib/api'
 
-const filterTabs = [
-  { id: 'top', label: 'Top' },
-  { id: 'posts', label: 'Posts' },
-  { id: 'publications', label: 'Publications' },
-  { id: 'people', label: 'People' },
-  { id: 'notes', label: 'Notes' }
-];
+// ─── Types ───────────────────────────────────────────────────────────────────
 
-// Mock search results data
-const mockSearchResults = [
-  {
-    id: 1,
-    type: 'post',
-    title: "Getting Started with Next.js 15 - A Complete Guide",
-    author: "Dinesh Arekar",
-    authorAvatar: "/images/blog/1.jpeg",
-    content: "Learn how to build modern web applications with Next.js 15. This comprehensive guide covers everything from installation to deployment...",
-    publishedAt: "2 days ago",
-    views: 15420,
-    likes: 847,
-    comments: 123,
-    thumbnail: "/images/blog/1.jpeg"
-  },
-  {
-    id: 2,
-    type: 'post',
-    title: "Advanced React Patterns Every Developer Should Know",
-    author: "Sarah Johnson",
-    authorAvatar: "/images/blog/2.jpeg",
-    content: "Explore advanced React patterns including render props, higher-order components, and custom hooks. These patterns will help you write more reusable...",
-    publishedAt: "5 days ago",
-    views: 12350,
-    likes: 692,
-    comments: 89,
-    thumbnail: "/images/blog/2.jpeg"
-  },
-  {
-    id: 3,
-    type: 'people',
-    name: "Dinesh Kumar",
-    username: "@dineshkumar",
-    bio: "Full-stack developer passionate about React, Node.js, and modern web technologies. Building the future of web development.",
-    followers: 2340,
-    following: 892,
-    avatar: "/images/blog/3.jpeg"
-  },
-  {
-    id: 4,
-    type: 'post',
-    title: "Building Scalable APIs with Node.js and TypeScript",
-    author: "Mike Chen",
-    authorAvatar: "/images/blog/1.jpeg",
-    content: "Learn how to architect and build scalable REST APIs using Node.js and TypeScript. This guide covers best practices, error handling...",
-    publishedAt: "1 week ago",
-    views: 9870,
-    likes: 523,
-    comments: 67,
-    thumbnail: "/images/blog/3.jpeg"
-  },
-  {
-    id: 5,
-    type: 'publication',
-    name: "Tech Weekly",
-    description: "Your weekly dose of technology news, tutorials, and insights from industry experts.",
-    subscribers: 45200,
-    posts: 324,
-    avatar: "/images/blog/2.jpeg"
+interface UserResult {
+  id: number
+  name: string
+  profileImg?: string | null
+  bio?: string | null
+}
+
+interface PostResult {
+  id: number
+  title: string
+  description: string
+  imageUrl?: string | null
+  createdAt: string
+  user: { id: number; name: string; profileImg?: string | null }
+  _count: { like: number; comment: number }
+}
+
+type SearchType = 'users' | 'posts'
+
+// ─── Avatar ──────────────────────────────────────────────────────────────────
+
+function Avatar({ name, src, size = 'md' }: { name: string; src?: string | null; size?: 'sm' | 'md' | 'lg' }) {
+  const sizeClass = size === 'lg' ? 'w-14 h-14 text-xl' : size === 'md' ? 'w-10 h-10 text-base' : 'w-8 h-8 text-sm'
+  const isValid = src && (src.startsWith('http://') || src.startsWith('https://'))
+  if (isValid) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={src} alt={name} className={`${sizeClass} rounded-full object-cover flex-shrink-0`}
+        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+    )
   }
-];
+  return (
+    <div className={`${sizeClass} rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center flex-shrink-0`}>
+      <span className="text-white font-bold">{name?.charAt(0)?.toUpperCase() || '?'}</span>
+    </div>
+  )
+}
 
-import { Suspense } from 'react';
+function plainText(html: string, maxChars = 200) {
+  const stripped = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+  return stripped.length > maxChars ? stripped.slice(0, maxChars) + '…' : stripped
+}
+
+function timeAgo(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 60) return `${mins}m ago`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h ago`
+  return `${Math.floor(hours / 24)}d ago`
+}
+
+// ─── Search Content ───────────────────────────────────────────────────────────
 
 function SearchContent() {
-  const [query, setQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState('top');
-  const [filteredResults, setFilteredResults] = useState(mockSearchResults);
-  
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
-  // Get query and filter from URL parameters
+  const [query, setQuery] = useState('')
+  const [searchType, setSearchType] = useState<SearchType>('users')
+  const [users, setUsers] = useState<UserResult[]>([])
+  const [posts, setPosts] = useState<PostResult[]>([])
+  const [loading, setLoading] = useState(false)
+  const [searched, setSearched] = useState(false)
+
+  // Initialise from URL on mount
   useEffect(() => {
-    if (searchParams) {
-      const urlQuery = searchParams.get('q') || '';
-      const urlFilter = searchParams.get('filter') || 'top';
-      setQuery(urlQuery);
-      setActiveFilter(urlFilter);
-    }
-  }, [searchParams]);
+    const q = searchParams.get('q') || ''
+    const type = (searchParams.get('type') || 'users') as SearchType
+    setQuery(q)
+    setSearchType(type)
+    if (q.trim()) runSearch(q, type)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
-  // Filter results based on active filter
-  useEffect(() => {
-    if (activeFilter === 'top') {
-      setFilteredResults(mockSearchResults);
-    } else {
-      setFilteredResults(mockSearchResults.filter(result => result.type === activeFilter.slice(0, -1))); // Remove 's' from 'posts' -> 'post'
+  async function runSearch(q: string, type: SearchType) {
+    if (!q.trim()) return
+    setLoading(true)
+    setSearched(false)
+    try {
+      if (type === 'users') {
+        const res = await api.get(`/user/search/users?q=${encodeURIComponent(q)}`)
+        setUsers(res.data.users || [])
+        setPosts([])
+      } else {
+        const res = await api.get(`/user/search/posts?q=${encodeURIComponent(q)}`)
+        setPosts(res.data.posts || [])
+        setUsers([])
+      }
+    } catch {
+      setUsers([]); setPosts([])
+    } finally {
+      setLoading(false)
+      setSearched(true)
     }
-  }, [activeFilter]);
+  }
 
-  const handleSearch = () => {
+  function handleSearch() {
+    if (!query.trim()) return
+    router.push(`/search?q=${encodeURIComponent(query.trim())}&type=${searchType}`)
+  }
+
+  function handleTabSwitch(type: SearchType) {
+    setSearchType(type)
     if (query.trim()) {
-      router.push(`/search?q=${encodeURIComponent(query.trim())}&filter=${activeFilter}`);
+      router.push(`/search?q=${encodeURIComponent(query.trim())}&type=${type}`)
     }
-  };
+  }
 
-  const handleKeyPress = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      handleSearch();
-    }
-  };
-
-  const handleFilterChange = (filterId: string) => {
-    setActiveFilter(filterId);
-    router.push(`/search?q=${encodeURIComponent(query)}&filter=${filterId}`);
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const renderSearchResult = (result: any) => {
-    if (result.type === 'post') {
-      return (
-        <div key={result.id} className="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-gray-600 transition-colors">
-          <div className="flex gap-4">
-            {result.thumbnail && (
-              <img 
-                src={result.thumbnail} 
-                alt={result.title}
-                className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
-              />
-            )}
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2">{result.title}</h3>
-              <div className="flex items-center gap-2 mb-3">
-                <img 
-                  src={result.authorAvatar} 
-                  alt={result.author}
-                  className="w-6 h-6 rounded-full"
-                />
-                <span className="text-gray-300 text-sm">{result.author}</span>
-                <span className="text-gray-500 text-sm">•</span>
-                <span className="text-gray-500 text-sm">{result.publishedAt}</span>
-              </div>
-              <p className="text-gray-400 text-sm mb-4 line-clamp-2">{result.content}</p>
-              <div className="flex items-center gap-4 text-sm text-gray-400">
-                <span className="flex items-center gap-1">
-                  <EyeIcon className="w-4 h-4" />
-                  {result.views?.toLocaleString()}
-                </span>
-                <span className="flex items-center gap-1">
-                  <ThumbUpIcon className="w-4 h-4" />
-                  {result.likes}
-                </span>
-                <span className="flex items-center gap-1">
-                  <ChatIcon className="w-4 h-4" />
-                  {result.comments}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    } else if (result.type === 'people') {
-      return (
-        <div key={result.id} className="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-gray-600 transition-colors">
-          <div className="flex items-center gap-4">
-            <img 
-              src={result.avatar} 
-              alt={result.name}
-              className="w-16 h-16 rounded-full"
-            />
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-white">{result.name}</h3>
-              <p className="text-gray-400 text-sm mb-2">{result.username}</p>
-              <p className="text-gray-300 text-sm mb-3">{result.bio}</p>
-              <div className="flex items-center gap-4 text-sm text-gray-400">
-                <span>{result.followers?.toLocaleString()} followers</span>
-                <span>{result.following?.toLocaleString()} following</span>
-              </div>
-            </div>
-            <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm transition-colors">
-              Follow
-            </button>
-          </div>
-        </div>
-      );
-    } else if (result.type === 'publication') {
-      return (
-        <div key={result.id} className="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-gray-600 transition-colors">
-          <div className="flex items-center gap-4">
-            <img 
-              src={result.avatar} 
-              alt={result.name}
-              className="w-16 h-16 rounded-lg"
-            />
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-white">{result.name}</h3>
-              <p className="text-gray-300 text-sm mb-3">{result.description}</p>
-              <div className="flex items-center gap-4 text-sm text-gray-400">
-                <span className="flex items-center gap-1">
-                  <UserGroupIcon className="w-4 h-4" />
-                  {result.subscribers?.toLocaleString()} subscribers
-                </span>
-                <span>{result.posts} posts</span>
-              </div>
-            </div>
-            <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm transition-colors">
-              Subscribe
-            </button>
-          </div>
-        </div>
-      );
-    }
-  };
+  const results = searchType === 'users' ? users : posts
+  const hasResults = results.length > 0
 
   return (
-    <>
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-4 md:p-6 lg:p-8">
-            
-            {/* Header */}
-            <div className="mb-8">
-              <h1 className="text-2xl font-bold text-white mb-6">Search Results</h1>
-              
-              {/* Search Bar */}
-              <div className="mb-6">
-                <div className="relative max-w-2xl">
-                  <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Search for posts, people, or topics..."
-                    className="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
+    <div className="flex-1 overflow-y-auto">
+      <div className="max-w-3xl mx-auto px-4 py-8">
 
-              {/* Filter Tabs */}
-              <div className="mb-6">
-                <div className="flex space-x-1 bg-gray-800 rounded-lg p-1 w-fit">
-                  {filterTabs.map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => handleFilterChange(tab.id)}
-                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                        activeFilter === tab.id
-                          ? 'bg-purple-600 text-white'
-                          : 'text-gray-400 hover:text-white hover:bg-gray-700'
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+        {/* ── Header ─────────────────────────────────────────────────────── */}
+        <h1 className="text-2xl font-bold text-white mb-6">Search</h1>
 
-              {/* Results Count */}
-              {query && (
-                <div className="mb-6">
-                  <p className="text-gray-400">
-                    Found <span className="text-white font-medium">{filteredResults.length}</span> results for 
-                    <span className="text-purple-400 font-medium"> &quot;{query}&quot;</span>
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Search Results */}
-            <div className="space-y-4">
-              {filteredResults.length > 0 ? (
-                filteredResults.map(renderSearchResult)
-              ) : (
-                <div className="text-center py-12">
-                  <SearchIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-400 mb-2">No results found</h3>
-                  <p className="text-gray-500">
-                    {query ? `No results for "${query}". Try different keywords or check your spelling.` : 'Enter a search term to get started'}
-                  </p>
-                </div>
-              )}
-            </div>
+        {/* ── Search bar ─────────────────────────────────────────────────── */}
+        <div className="flex gap-2 mb-6">
+          <div className="flex-1 relative">
+            <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400 w-5 h-5"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleSearch() }}
+              placeholder="Search for users or posts…"
+              className="w-full pl-11 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+            />
           </div>
+          <button
+            onClick={handleSearch}
+            className="px-5 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-colors flex-shrink-0"
+          >
+            Search
+          </button>
         </div>
-    </>
-  );
+
+        {/* ── Type tabs ──────────────────────────────────────────────────── */}
+        <div className="flex gap-1 mb-8 bg-gray-800/50 p-1 rounded-xl w-fit border border-gray-700/50">
+          {(['users', 'posts'] as SearchType[]).map(t => (
+            <button
+              key={t}
+              onClick={() => handleTabSwitch(t)}
+              className={`px-5 py-2 rounded-lg text-sm font-semibold capitalize transition-all duration-150 ${
+                searchType === t
+                  ? 'bg-orange-500 text-white shadow-sm'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Results count ──────────────────────────────────────────────── */}
+        {searched && query && (
+          <p className="text-sm text-gray-400 mb-4">
+            {hasResults
+              ? <><span className="text-white font-semibold">{results.length}</span> {searchType} found for <span className="text-orange-400 font-medium">&ldquo;{query}&rdquo;</span></>
+              : <>No {searchType} found for <span className="text-orange-400 font-medium">&ldquo;{query}&rdquo;</span></>
+            }
+          </p>
+        )}
+
+        {/* ── Loading ────────────────────────────────────────────────────── */}
+        {loading && (
+          <div className="flex items-center justify-center py-16">
+            <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+
+        {/* ── Empty state ────────────────────────────────────────────────── */}
+        {!loading && searched && !hasResults && (
+          <div className="text-center py-16">
+            <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">🔍</div>
+            <h3 className="text-lg font-semibold text-gray-300 mb-2">No results found</h3>
+            <p className="text-gray-500 text-sm">Try a different keyword or switch tab</p>
+          </div>
+        )}
+
+        {/* ── Initial empty state ────────────────────────────────────────── */}
+        {!loading && !searched && !query && (
+          <div className="text-center py-16">
+            <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">✨</div>
+            <h3 className="text-lg font-semibold text-gray-300 mb-2">What are you looking for?</h3>
+            <p className="text-gray-500 text-sm">Search for users or posts above</p>
+          </div>
+        )}
+
+        {/* ── User results ───────────────────────────────────────────────── */}
+        {!loading && searchType === 'users' && users.length > 0 && (
+          <div className="space-y-3">
+            {users.map(user => (
+              <button
+                key={user.id}
+                onClick={() => router.push(`/profile/${user.id}`)}
+                className="w-full flex items-center gap-4 p-4 bg-gray-800 hover:bg-gray-800/80 border border-gray-700 hover:border-gray-600 rounded-xl transition-all group text-left"
+              >
+                <Avatar name={user.name} src={user.profileImg} size="lg" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold text-base group-hover:text-orange-300 transition-colors">
+                    {user.name}
+                  </p>
+                  {user.bio && (
+                    <p className="text-gray-400 text-sm mt-0.5 line-clamp-2">{user.bio}</p>
+                  )}
+                </div>
+                <div className="flex-shrink-0 px-4 py-1.5 bg-gray-700 hover:bg-orange-500 text-white text-sm font-medium rounded-full transition-colors">
+                  View Profile
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* ── Post results ───────────────────────────────────────────────── */}
+        {!loading && searchType === 'posts' && posts.length > 0 && (
+          <div className="space-y-3">
+            {posts.map(post => (
+              <button
+                key={post.id}
+                onClick={() => router.push(`/blog/${post.id}`)}
+                className="w-full flex gap-4 p-4 bg-gray-800 hover:bg-gray-800/80 border border-gray-700 hover:border-gray-600 rounded-xl transition-all group text-left"
+              >
+                {/* Thumbnail */}
+                {post.imageUrl && (post.imageUrl.startsWith('http://') || post.imageUrl.startsWith('https://')) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={post.imageUrl}
+                    alt={post.title}
+                    className="w-24 h-20 rounded-lg object-cover flex-shrink-0"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                  />
+                ) : (
+                  <div className="w-24 h-20 rounded-lg bg-gray-700 border border-gray-600 flex items-center justify-center flex-shrink-0 text-2xl">
+                    📝
+                  </div>
+                )}
+
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-white font-semibold text-base group-hover:text-orange-300 transition-colors line-clamp-1">
+                    {post.title}
+                  </h3>
+                  <p className="text-gray-400 text-sm mt-1 line-clamp-2 leading-relaxed">
+                    {plainText(post.description)}
+                  </p>
+                  <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                    <div className="flex items-center gap-1.5">
+                      <Avatar name={post.user.name} src={post.user.profileImg} size="sm" />
+                      <span>{post.user.name}</span>
+                    </div>
+                    <span>·</span>
+                    <span>{timeAgo(post.createdAt)}</span>
+                    <span>·</span>
+                    <span>❤️ {post._count.like}</span>
+                    <span>💬 {post._count.comment}</span>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+      </div>
+    </div>
+  )
 }
+
+// ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function SearchPage() {
   return (
     <DashboardLayout>
-      <Suspense fallback={<div className="flex justify-center items-center h-screen text-gray-400">Loading search...</div>}>
-         <SearchContent />
+      <Suspense fallback={
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      }>
+        <SearchContent />
       </Suspense>
     </DashboardLayout>
   )

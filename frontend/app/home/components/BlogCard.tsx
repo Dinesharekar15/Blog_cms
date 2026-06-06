@@ -6,6 +6,7 @@ import { CldImage } from "next-cloudinary";
 import { useUser } from "@/context/UserContext";
 import { UserHoverCard } from "@/app/components/UserHoverCard";
 import DOMPurify from "dompurify";
+import { getProfileImageUrl } from "@/lib/cloudinary";
 
 export default function BlogCard() {
   const {
@@ -27,10 +28,10 @@ export default function BlogCard() {
   };
 
   return (
-    <div className="flex-1 bg-gray-900">
+    <div className="flex-1  overflow-hidden">
       {/* Scrollable Content Area */}
-      <div className="h-screen overflow-y-auto scrollbar-auto-hide">
-        <div className="cursor-pointer max-w-2xl mx-auto p-6 space-y-6 pb-24 md:pb-6">
+      <div className="h-full overflow-y-auto scrollbar-auto-hide">
+        <div className="cursor-pointer max-w-3xl mx-auto px-4 py-6 space-y-6 pb-24 md:pb-6">
           {loading && blogs.length === 0 && (
             <div className="text-center text-gray-400 py-12">Loading blogs…</div>
           )}
@@ -39,14 +40,21 @@ export default function BlogCard() {
           {blogs.map((blog: any) => (
             <article
               key={blog.id}
-              className="mt-8 bg-gray-800 rounded-lg border border-gray-700 p-6 hover:border-gray-600 transition-all duration-200"
+              className="  border-b  border-gray-700 p-6 hover:border-gray-600 transition-all duration-200"
             >
               {/* Author Header */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <div className="cursor-pointer w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-lg">
-                    {blog.user.name.charAt(0).toUpperCase()}
-                  </div>
+                  <Link href={`/profile/${blog.user.id}`} className="flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
+                      {getProfileImageUrl(blog.user.profileImg) ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={getProfileImageUrl(blog.user.profileImg)!} alt={blog.user.name} className="w-full h-full object-cover" />
+                      ) : (
+                        blog.user.name.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                  </Link>
                   <div>
                     <div className="cursor-pointer flex items-center space-x-2">
                       <UserHoverCard hoverduser={blog.user} onFollow={handelFollow} loadingUserId={loadingUserId} />
@@ -60,11 +68,10 @@ export default function BlogCard() {
                   <button
                     disabled={loadingUserId === blog.user.id}
                     onClick={() => { handelFollow(blog.user.id) }}
-                    className={`cursor-pointer px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
-                      blog.user.isFollowing
-                        ? "bg-gray-600 text-gray-300 hover:bg-gray-500"
-                        : "bg-orange-500 text-white hover:bg-orange-600"
-                    }`}
+                    className={`cursor-pointer px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${blog.user.isFollowing
+                      ? "bg-gray-600 text-gray-300 hover:bg-gray-500"
+                      : "bg-orange-500 text-white hover:bg-orange-600"
+                      }`}
                   >
                     {blog.user.isFollowing ? "Following" : "Follow"}
                   </button>
@@ -84,15 +91,14 @@ export default function BlogCard() {
                   />
 
                   {blog.imageUrl && (
-                    <div className="w-full h-48 bg-gray-700 rounded-lg flex items-center justify-center mb-4">
+                    <div className="w-full rounded-xl overflow-hidden bg-gray-900 mb-4 border border-gray-700/50">
                       <CldImage
                         src={blog.imageUrl}
-                        width={800}
-                        height={300}
-                        crop="fill"
-                        gravity="center"
+                        width={1200}
+                        height={900}
+                        crop="limit"
                         alt={blog.title}
-                        className="rounded-lg"
+                        className="w-full h-auto max-h-[500px] object-contain"
                       />
                     </div>
                   )}
@@ -107,9 +113,8 @@ export default function BlogCard() {
                     className="flex items-center space-x-2 text-gray-400 hover:text-red-500 transition-colors duration-200"
                   >
                     <svg
-                      className={`cursor-pointer w-5 h-5 transition-colors ${
-                        blog.isLiked ? "fill-red-500 text-red-500" : "fill-none text-gray-400"
-                      }`}
+                      className={`cursor-pointer w-5 h-5 transition-colors ${blog.isLiked ? "fill-red-500 text-red-500" : "fill-none text-gray-400"
+                        }`}
                       viewBox="0 0 24 24"
                       stroke="currentColor"
                     >

@@ -47,6 +47,14 @@ export default function SignInPage() {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
+      // Unverified user — redirect to verify-email with fresh OTP
+      if (err?.response?.status === 403 && err?.response?.data?.needsVerification) {
+        const pendingEmail = err.response.data.pendingEmail || formData.email
+        sessionStorage.setItem('pendingEmail', pendingEmail)
+        setError(err.response.data.msg || 'Please verify your email.')
+        setTimeout(() => router.push('/auth/verify-email'), 1200)
+        return
+      }
       const msg = err?.response?.data?.msg || 'Something went wrong. Please try again.'
       setError(msg)
     } finally {
@@ -102,7 +110,7 @@ export default function SignInPage() {
             />
             <div className="mt-2 text-right">
               <Link
-                href="/forgot-password"
+                href="/auth/forgot-password"
                 className="text-sm text-orange-500 hover:text-orange-600 transition-colors duration-200 cursor-pointer"
               >
                 Forgot Password?

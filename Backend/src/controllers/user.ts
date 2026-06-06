@@ -35,15 +35,15 @@ const loggedInUserProfile = async (req: CustomRequest, res: Response) => {
       return res.status(404).json({ msg: "User not found" });
     }
 
-    const formatted={
-      id:user.id,
-      name:user.name,
-      email:user.email,
-      bio:user.bio,
-      profileImg:user.profileImg,
-      followingCount:user._count.following,
-      followersCount:user._count.followers,
-      blogCount:user._count.blogs
+    const formatted = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      bio: user.bio,
+      profileImg: user.profileImg,
+      followingCount: user._count.following,
+      followersCount: user._count.followers,
+      blogCount: user._count.blogs
     }
 
     return res.status(200).json({ formatted });
@@ -61,27 +61,27 @@ const loggedInUserBolgs = asyncHandler(async (req: CustomRequest, res: Response)
     return;
   }
   try {
-    const blogs = await prisma.blog.findMany({ 
-        where: { userId },
-        include:{
-                user:{
-                        select:{
-                                name:true,
-                                profileImg:true,
-                                email:true,
-                        }
-                },
-                _count:{
-                        select:{
-                                like:true,
-                                comment:true
-                        }
-                }
+    const blogs = await prisma.blog.findMany({
+      where: { userId },
+      include: {
+        user: {
+          select: {
+            name: true,
+            profileImg: true,
+            email: true,
+          }
         },
-        orderBy:{
-                createdAt:"desc"
+        _count: {
+          select: {
+            like: true,
+            comment: true
+          }
         }
-});
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
     // console.log(userId)
     if (blogs.length === 0) {
       res.status(201).json({ msg: "No blogs posted", blogs: [] });
@@ -180,7 +180,7 @@ const unFollowUser = async (req: CustomRequest, res: Response) => {
   if (userId === loggedInUserId) {
     return res.status(400).json({ msg: "You cannot unfollow yourself" });
   }
-  console.log("userIdBackend:",userId)
+  console.log("userIdBackend:", userId)
   try {
     await prisma.follower.delete({
       where: {
@@ -200,7 +200,7 @@ const unFollowUser = async (req: CustomRequest, res: Response) => {
 
 const getUserFollowers = async (req: CustomRequest, res: Response) => {
   const userId = Number(req.params.userId);
-  const loggedInUserId=req.user.id
+  const loggedInUserId = req.user.id
   try {
     const followers = await prisma.follower.findMany({
       where: {
@@ -215,35 +215,35 @@ const getUserFollowers = async (req: CustomRequest, res: Response) => {
             profileImg: true,
           },
         },
-        
+
       },
-      orderBy:{
-        id:"desc"
+      orderBy: {
+        id: "desc"
       }
     });
-    const formattedFollowers= await Promise.all(
-      followers.map(async(f)=>{
-        const isFollowing=await prisma.follower.findUnique({
-          where:{
-            followerId_followingId:{
-              followerId:loggedInUserId,
-              followingId:userId
+    const formattedFollowers = await Promise.all(
+      followers.map(async (f) => {
+        const isFollowing = await prisma.follower.findUnique({
+          where: {
+            followerId_followingId: {
+              followerId: loggedInUserId,
+              followingId: userId
             }
           }
         })
-        return{
+        return {
           ...f.follower,
-          isFollowing:Boolean(isFollowing)
+          isFollowing: Boolean(isFollowing)
         }
       })
     )
 
 
 
-    res.status(200).json({ 
-        count:formattedFollowers.length,
-        followers:formattedFollowers,
-     });
+    res.status(200).json({
+      count: formattedFollowers.length,
+      followers: formattedFollowers,
+    });
   } catch (error) {
 
     console.error(error);
@@ -255,7 +255,7 @@ const getUserFollowers = async (req: CustomRequest, res: Response) => {
 
 const getUserFollowings = async (req: CustomRequest, res: Response) => {
   const userId = Number(req.params.userId);
-  const loggedInUserId=req.user.id
+  const loggedInUserId = req.user.id
   try {
     const followings = await prisma.follower.findMany({
       where: {
@@ -270,34 +270,34 @@ const getUserFollowings = async (req: CustomRequest, res: Response) => {
             profileImg: true,
           },
         },
-        
+
       },
-      orderBy:{
-        id:"desc"
+      orderBy: {
+        id: "desc"
       }
     });
-    const formattedFollowings=await Promise.all(
-      followings.map(async(f)=>{
-        const isFollowing=await prisma.follower.findUnique({
-          where:{
-            followerId_followingId:{
-              followerId:loggedInUserId,
-              followingId:userId
+    const formattedFollowings = await Promise.all(
+      followings.map(async (f) => {
+        const isFollowing = await prisma.follower.findUnique({
+          where: {
+            followerId_followingId: {
+              followerId: loggedInUserId,
+              followingId: userId
             }
           }
         })
         return {
           ...f.following,
-          isFollowing:Boolean(isFollowing)
+          isFollowing: Boolean(isFollowing)
         }
       })
     )
-    res.status(200).json({ 
-        count:formattedFollowings.length,
-        followings:formattedFollowings
-     });
+    res.status(200).json({
+      count: formattedFollowings.length,
+      followings: formattedFollowings
+    });
   } catch (error) {
-        console.error(error);
+    console.error(error);
     return res.status(500).json({ msg: "Internal Server Error" });
   }
 };
@@ -342,4 +342,105 @@ const getUserBlogs = async (req: CustomRequest, res: Response) => {
 };
 
 
-export { loggedInUserProfile, loggedInUserBolgs, getUserMetaData, followUser, unFollowUser ,getUserFollowers ,getUserFollowings,getUserBlogs};
+const searchUsers = async (req: CustomRequest, res: Response) => {
+  const q = String(req.query.q || "").trim();
+  const LIMIT = 10;
+
+  if (!q) return res.status(200).json({ users: [], hasMore: false });
+
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        name: { contains: q, mode: "insensitive" },
+        isVerified: true,
+      },
+      select: { id: true, name: true, profileImg: true, bio: true },
+      take: LIMIT + 1,
+      orderBy: { name: "asc" },
+    });
+
+    const hasMore = users.length > LIMIT;
+    return res.status(200).json({ users: users.slice(0, LIMIT), hasMore });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "Internal Server Error" });
+  }
+};
+
+const searchPosts = async (req: CustomRequest, res: Response) => {
+  const q = String(req.query.q || "").trim();
+  const LIMIT = 10;
+
+  if (!q) return res.status(200).json({ posts: [], hasMore: false });
+
+  try {
+    const posts = await prisma.blog.findMany({
+      where: { title: { contains: q, mode: "insensitive" } },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        imageUrl: true,
+        createdAt: true,
+        user: { select: { id: true, name: true, profileImg: true } },
+        _count: { select: { like: true, comment: true } },
+      },
+      take: LIMIT + 1,
+      orderBy: { createdAt: "desc" },
+    });
+
+    const hasMore = posts.length > LIMIT;
+    return res.status(200).json({ posts: posts.slice(0, LIMIT), hasMore });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "Internal Server Error" });
+  }
+};
+
+const updateProfile = async (req: CustomRequest, res: Response) => {
+  const id = req.user?.id;
+  const { name, bio, profileImg } = req.body;
+
+  try {
+    const updated = await prisma.user.update({
+      where: { id },
+      data: {
+        ...(name?.trim() && { name: name.trim() }),
+        ...(bio !== undefined && { bio: bio.trim() || null }),
+        ...(profileImg !== undefined && { profileImg: profileImg || null }),
+      },
+      select: { id: true, name: true, email: true, bio: true, profileImg: true },
+    });
+    return res.status(200).json({ msg: "Profile updated", user: updated });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "Internal Server Error" });
+  }
+};
+
+const changePassword = async (req: CustomRequest, res: Response) => {
+  const id = req.user?.id;
+  const { oldPassword, newPassword } = req.body;
+
+  if (!newPassword || newPassword.length < 6) {
+    return res.status(400).json({ msg: "New password must be at least 6 characters" });
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { id }, select: { password: true } });
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    const valid = await (await import("bcrypt")).default.compare(oldPassword, user.password);
+    if (!valid) return res.status(401).json({ msg: "Current password is incorrect" });
+
+    const hashed = await (await import("bcrypt")).default.hash(newPassword, 10);
+    await prisma.user.update({ where: { id }, data: { password: hashed } });
+
+    return res.status(200).json({ msg: "Password updated successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "Internal Server Error" });
+  }
+};
+
+export { loggedInUserProfile, loggedInUserBolgs, getUserMetaData, followUser, unFollowUser, getUserFollowers, getUserFollowings, getUserBlogs, searchUsers, searchPosts, updateProfile, changePassword };

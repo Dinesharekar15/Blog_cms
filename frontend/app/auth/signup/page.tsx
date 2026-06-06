@@ -8,11 +8,11 @@ import FormCard from "../../components/ui/FormCard";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/context/UserContext';
+// UserContext not needed at signup — login happens after OTP verification
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { refreshUser } = useUser()
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -53,10 +53,12 @@ export default function SignUpPage() {
         { withCredentials: true }
       )
 
-      setSuccess(response.data.msg || 'Account created! Redirecting…')
-      await refreshUser()
+      const pendingEmail = response.data.pendingEmail || formData.email
+      sessionStorage.setItem('pendingEmail', pendingEmail)
+
+      setSuccess(response.data.msg || 'OTP sent! Please check your email.')
       setFormData(initialformData)
-      setTimeout(() => router.push('/home'), 800)
+      setTimeout(() => router.push('/auth/verify-email'), 800)
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {

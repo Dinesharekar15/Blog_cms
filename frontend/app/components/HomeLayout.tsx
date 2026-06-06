@@ -2,89 +2,66 @@
 
 import { useState, ReactNode } from 'react';
 import SidebarNavigation from '../home/components/SidebarNavigation';
-import TopNavigation from '../home/components/TopNavigation';
 import MobileBottomMenu from '../home/components/MobileBottomMenu';
 import MobileFAB from '../home/components/MobileFAB';
 import BottomNavigationBar from '../home/components/BottomNavigationBar';
-import ActivitySidebar from '../components/ActivitySidebar';
-import SearchModal from '../components/SearchModal';
+import SearchBar from '../components/SearchBar';
+import { useRouter } from 'next/navigation';
 
 interface HomeLayoutProps {
   children: ReactNode;
+  showSidebar?: boolean;
 }
 
-export default function HomeLayout({ children }: HomeLayoutProps) {
+export default function HomeLayout({ children, showSidebar = true }: HomeLayoutProps) {
   const [isMobileBottomMenuOpen, setIsMobileBottomMenuOpen] = useState(false);
-  const [isActivitySidebarOpen, setIsActivitySidebarOpen] = useState(false);
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const router = useRouter();
 
-  const toggleMobileBottomMenu = () => {
-    setIsMobileBottomMenuOpen(!isMobileBottomMenuOpen);
-  };
-
-  const closeMobileBottomMenu = () => {
-    setIsMobileBottomMenuOpen(false);
-  };
-
-  const handleActivityToggle = () => {
-    setIsActivitySidebarOpen(!isActivitySidebarOpen);
-  };
-
-  const handleActivityClose = () => {
-    setIsActivitySidebarOpen(false);
-  };
-
-  const handleSearchToggle = () => {
-    setIsSearchModalOpen(true);
-  };
-
-  const handleSearchClose = () => {
-    setIsSearchModalOpen(false);
-  };
+  const closeMobileBottomMenu = () => setIsMobileBottomMenuOpen(false);
 
   return (
-    <div className="bg-gray-900 min-h-screen flex overflow-hidden">
-      {/* Desktop Left Sidebar Navigation */}
-      <SidebarNavigation 
-        onActivityClick={handleActivityToggle} 
-        isActivityOpen={isActivitySidebarOpen}
-        onSearchClick={handleSearchToggle}
-      />
-      
-      {/* Activity Sidebar - Slides in from right */}
-      <ActivitySidebar 
-        isOpen={isActivitySidebarOpen}
-        onClose={handleActivityClose}
-      />
+    <div className="bg-gray-900 min-h-screen flex flex-col overflow-hidden">
 
-      {/* Search Modal */}
-      <SearchModal 
-        isOpen={isSearchModalOpen} 
-        onClose={handleSearchClose} 
-      />
-      
-      {/* Mobile Bottom Menu */}
-      <MobileBottomMenu isOpen={isMobileBottomMenuOpen} onClose={closeMobileBottomMenu} />
-      
-      {/* Main Content Area */}
-      <div className="flex-1 
-        ml-0 md:ml-16 lg:ml-64 
-        mr-0 lg:mr-80 
-        flex flex-col h-screen responsive-transition relative">
-        
-        {/* Fixed Top Navigation */}
-        {/* <TopNavigation onMobileMenuToggle={toggleMobileBottomMenu} /> */}
-        
-        {/* Content */}
-        {children}
+      {/* ── Full-width fixed top bar ── */}
+      <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-gray-900 border-b border-gray-800 flex items-center px-4 gap-4">
+        {/* Logo */}
+        <button
+          onClick={() => router.push('/home')}
+          className="flex items-center gap-2 flex-shrink-0 hover:opacity-80 transition-opacity"
+        >
+          <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-pink-500 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">C</span>
+          </div>
+          <span className="text-white font-bold text-base hidden lg:block">CreatorCMS</span>
+        </button>
+
+        {/* Search bar */}
+        <div className="flex-1 min-w-0">
+          <SearchBar />
+        </div>
+      </header>
+
+      {/* ── Body ── */}
+      <div className="flex flex-1 pt-14">
+
+        {/* Left Sidebar — only on home/chat/activity pages */}
+        {showSidebar && <SidebarNavigation />}
+
+        {/* Thin vertical divider — only when sidebar is shown */}
+        {showSidebar && (
+          <div className="fixed top-14 bottom-0 z-30 w-px bg-gray-800 left-16 lg:left-64 hidden md:block" />
+        )}
+
+        {/* Mobile Bottom Menu */}
+        <MobileBottomMenu isOpen={isMobileBottomMenuOpen} onClose={closeMobileBottomMenu} />
+
+        {/* Main content */}
+        <main className={`flex-1 flex flex-col min-h-0 ${showSidebar ? 'ml-0 md:ml-16 lg:ml-64' : 'ml-0'}`}>
+          {children}
+        </main>
       </div>
 
-      
-
-      {/* Mobile FAB */}
       <MobileFAB />
-
-      {/* Bottom Navigation Bar */}
       <BottomNavigationBar />
     </div>
   );
