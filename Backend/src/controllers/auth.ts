@@ -22,16 +22,19 @@ function createRefreshToken() {
 
 /** Set both auth_token (1h) and refresh_token (7d) cookies */
 function setAuthCookies(res: Response, accessToken: string, refreshToken: string) {
+  const isProduction = process.env.NODE_ENV === "production";
   res.cookie("auth_token", accessToken, {
     httpOnly: true,
-    sameSite: "strict",
-    secure: process.env.NODE_ENV === "production",
+    // "none" is required for cross-domain requests (frontend & backend on different domains).
+    // "none" mandates secure:true, so we always set secure in production.
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
     maxAge: 60 * 60 * 1000, // 1 hour
   });
   res.cookie("refresh_token", refreshToken, {
     httpOnly: true,
-    sameSite: "strict",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 }
@@ -285,8 +288,9 @@ const signIn = asyncHandler(
 
 /** POST /api/v1/auth/signout — clears both cookies */
 const signOut = asyncHandler(async (_req: Request, res: Response) => {
-  res.clearCookie("auth_token", { httpOnly: true, sameSite: "strict" });
-  res.clearCookie("refresh_token", { httpOnly: true, sameSite: "strict" });
+  const isProduction = process.env.NODE_ENV === "production";
+  res.clearCookie("auth_token", { httpOnly: true, sameSite: isProduction ? "none" : "lax", secure: isProduction });
+  res.clearCookie("refresh_token", { httpOnly: true, sameSite: isProduction ? "none" : "lax", secure: isProduction });
   res.status(200).json({ msg: "Logged out successfully" });
 });
 
