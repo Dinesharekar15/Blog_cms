@@ -35,7 +35,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <SidebarNavigation 
         onActivityClick={handleActivityToggle} 
         isActivityOpen={isActivitySidebarOpen}
-        onSearchClick={handleSearchToggle}
       />
       
       {/* Activity Sidebar */}

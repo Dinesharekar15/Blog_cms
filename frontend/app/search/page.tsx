@@ -74,6 +74,7 @@ function SearchContent() {
   const [searched, setSearched] = useState(false)
 
   useEffect(() => {
+    if (!searchParams) return
     const q = searchParams.get('q') || ''
     const type = (searchParams.get('type') || 'users') as SearchType
     setQuery(q)
