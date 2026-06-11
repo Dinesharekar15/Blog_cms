@@ -152,156 +152,156 @@ export default function ProfilePage() {
       <div className="overflow-y-auto h-full">
         <div className="w-full max-w-3xl mx-auto px-4 py-10">
 
-        {/* ── PROFILE HEADER ────────────────────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
-          {/* Avatar */}
-          <div className="w-24 h-24 shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-orange-500 to-pink-500 flex items-center justify-center text-4xl font-bold text-white shadow-lg">
-            {getProfileImageUrl(profile.profileImg) ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={getProfileImageUrl(profile.profileImg)!} alt={profile.name} className="w-full h-full object-cover" />
-            ) : (
-              profile.name.charAt(0).toUpperCase()
-            )}
-          </div>
-
-          {/* Info — always full width so stats row doesn't shrink */}
-          <div className="flex-1 min-w-0 w-full text-center sm:text-left">
-            <div className="flex flex-col justify-between sm:flex-row sm:items-center gap-3 sm:gap-4 mb-2">
-              <h1 className="text-2xl font-bold text-white">{profile.name}</h1>
-
-              {/* Follow / Edit button */}
-              {isOwnProfile ? (
-                <button
-                  onClick={() => router.push("/profile/edit")}
-                  className="px-5 py-1.5 rounded-full border border-gray-500 text-sm text-gray-300 hover:border-white hover:text-white transition-all"
-                >
-                  Edit Profile
-                </button>
+          {/* ── PROFILE HEADER ────────────────────────────────────────────── */}
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
+            {/* Avatar */}
+            <div className="w-24 h-24 shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-orange-500 to-pink-500 flex items-center justify-center text-4xl font-bold text-white shadow-lg">
+              {getProfileImageUrl(profile.profileImg) ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={getProfileImageUrl(profile.profileImg)!} alt={profile.name} className="w-full h-full object-cover" />
               ) : (
-                <button
-                  onClick={handleFollow}
-                  disabled={followLoading}
-                  className={`px-5 py-1.5 rounded-full text-sm font-semibold transition-all disabled:opacity-50 ${profile.isFollowing
-                    ? "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-500"
-                    : "bg-orange-500 text-white hover:bg-orange-600"
-                    }`}
-                >
-                  {followLoading ? "…" : profile.isFollowing ? "Following" : "Follow"}
-                </button>
+                profile.name.charAt(0).toUpperCase()
               )}
             </div>
 
-            <p className="text-gray-400 text-sm mb-4">
-              {profile.bio || "No bio yet."}
-            </p>
+            {/* Info — always full width so stats row doesn't shrink */}
+            <div className="flex-1 min-w-0 w-full text-center sm:text-left">
+              <div className="flex flex-col justify-between sm:flex-row sm:items-center gap-3 sm:gap-4 mb-2">
+                <h1 className="text-2xl font-bold text-white">{profile.name}</h1>
 
-            {/* Stats row — clickable */}
-            <div className="flex justify-center sm:justify-start gap-8 text-sm">
-              <button onClick={() => handleTabChange("posts")} className="text-center hover:opacity-80 transition-opacity">
-                <span className="block text-white font-bold text-lg">{profile.blogsCount}</span>
-                <span className="text-gray-400">Posts</span>
-              </button>
-              <button onClick={() => handleTabChange("followers")} className="text-center hover:opacity-80 transition-opacity">
-                <span className="block text-white font-bold text-lg">{profile.followersCount}</span>
-                <span className="text-gray-400">Followers</span>
-              </button>
-              <button onClick={() => handleTabChange("following")} className="text-center hover:opacity-80 transition-opacity">
-                <span className="block text-white font-bold text-lg">{profile.followingCount}</span>
-                <span className="text-gray-400">Following</span>
-              </button>
+                {/* Follow / Edit button */}
+                {isOwnProfile ? (
+                  <button
+                    onClick={() => router.push("/profile/edit")}
+                    className="px-5 py-1.5 rounded-full border border-gray-500 text-sm text-gray-300 hover:border-white hover:text-white transition-all"
+                  >
+                    Edit Profile
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleFollow}
+                    disabled={followLoading}
+                    className={`px-5 py-1.5 rounded-full text-sm font-semibold transition-all disabled:opacity-50 ${profile.isFollowing
+                      ? "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-500"
+                      : "bg-orange-500 text-white hover:bg-orange-600"
+                      }`}
+                  >
+                    {followLoading ? "…" : profile.isFollowing ? "Following" : "Follow"}
+                  </button>
+                )}
+              </div>
+
+              <p className="text-gray-400 text-sm mb-4">
+                {profile.bio || "No bio yet."}
+              </p>
+
+              {/* Stats row — clickable */}
+              <div className="flex justify-center sm:justify-start gap-8 text-sm">
+                <button onClick={() => handleTabChange("posts")} className="text-center hover:opacity-80 transition-opacity">
+                  <span className="block text-white font-bold text-lg">{profile.blogsCount}</span>
+                  <span className="text-gray-400">Posts</span>
+                </button>
+                <button onClick={() => handleTabChange("followers")} className="text-center hover:opacity-80 transition-opacity">
+                  <span className="block text-white font-bold text-lg">{profile.followersCount}</span>
+                  <span className="text-gray-400">Followers</span>
+                </button>
+                <button onClick={() => handleTabChange("following")} className="text-center hover:opacity-80 transition-opacity">
+                  <span className="block text-white font-bold text-lg">{profile.followingCount}</span>
+                  <span className="text-gray-400">Following</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* ── TABS ──────────────────────────────────────────────────────── */}
-        <div className="flex gap-8 border-b border-gray-700 mb-6">
-          <button className={tabClass("posts")} onClick={() => handleTabChange("posts")}>Posts</button>
-          <button className={tabClass("followers")} onClick={() => handleTabChange("followers")}>Followers</button>
-          <button className={tabClass("following")} onClick={() => handleTabChange("following")}>Following</button>
-        </div>
+          {/* ── TABS ──────────────────────────────────────────────────────── */}
+          <div className="flex gap-8 border-b border-gray-700 mb-6">
+            <button className={tabClass("posts")} onClick={() => handleTabChange("posts")}>Posts</button>
+            <button className={tabClass("followers")} onClick={() => handleTabChange("followers")}>Followers</button>
+            <button className={tabClass("following")} onClick={() => handleTabChange("following")}>Following</button>
+          </div>
 
-        {/* ── TAB CONTENT ───────────────────────────────────────────────── */}
+          {/* ── TAB CONTENT ───────────────────────────────────────────────── */}
 
-        {/* POSTS */}
-        {activeTab === "posts" && (
-          <div className="space-y-6">
-            {blogs.length === 0 ? (
-              <p className="text-center text-gray-500 py-12">No posts yet.</p>
-            ) : (
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              blogs.map((blog: any) => (
-                <Link key={blog.id} href={`/blog/${blog.id}`} className="block">
-                  <article className="bg-gray-800 border border-gray-700 rounded-xl p-5 hover:border-orange-500/50 transition-all duration-200 group">
-                    <h2 className="text-white font-bold text-lg mb-2 group-hover:text-orange-400 transition-colors">
-                      {blog.title}
-                    </h2>
-                    <div
-                      className="text-gray-400 text-sm leading-relaxed line-clamp-2 mb-3"
-                      dangerouslySetInnerHTML={{ __html: sanitize(blog.description) }}
-                    />
-                    {blog.imageUrl && (
-                      <div className="w-full rounded-lg overflow-hidden mb-3">
-                        <CldImage
-                          src={blog.imageUrl}
-                          width={1200}
-                          height={900}
-                          crop="limit"
-                          alt={blog.title}
-                          className="w-full h-auto max-h-64 object-contain"
-                        />
+          {/* POSTS */}
+          {activeTab === "posts" && (
+            <div className="space-y-6">
+              {blogs.length === 0 ? (
+                <p className="text-center text-gray-500 py-12">No posts yet.</p>
+              ) : (
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                blogs.map((blog: any) => (
+                  <Link key={blog.id} href={`/blog/${blog.id}`} className="block">
+                    <article className="bg-gray-800 border border-gray-700 rounded-xl p-5    transition-all duration-200 group">
+                      <h2 className="text-white font-bold text-lg mb-2  transition-colors">
+                        {blog.title}
+                      </h2>
+                      <div
+                        className="text-gray-400 text-sm leading-relaxed line-clamp-2 mb-3"
+                        dangerouslySetInnerHTML={{ __html: sanitize(blog.description) }}
+                      />
+                      {blog.imageUrl && (
+                        <div className="w-full rounded-lg overflow-hidden mb-3">
+                          <CldImage
+                            src={blog.imageUrl}
+                            width={1200}
+                            height={900}
+                            crop="limit"
+                            alt={blog.title}
+                            className="w-full h-auto max-h-64 object-contain"
+                          />
+                        </div>
+                      )}
+                      <div className="flex items-center gap-5 text-gray-500 text-xs mt-1">
+                        <span className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                          </svg>
+                          {blog._count?.like ?? 0}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                          </svg>
+                          {blog._count?.comment ?? 0}
+                        </span>
+                        <span className="ml-auto">{timeAgo(blog.createdAt)}</span>
                       </div>
-                    )}
-                    <div className="flex items-center gap-5 text-gray-500 text-xs mt-1">
-                      <span className="flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                        {blog._count?.like ?? 0}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                        {blog._count?.comment ?? 0}
-                      </span>
-                      <span className="ml-auto">{timeAgo(blog.createdAt)}</span>
-                    </div>
-                  </article>
-                </Link>
-              ))
-            )}
-          </div>
-        )}
+                    </article>
+                  </Link>
+                ))
+              )}
+            </div>
+          )}
 
-        {/* FOLLOWERS */}
-        {activeTab === "followers" && (
-          <div className="space-y-3">
-            {followers.length === 0 ? (
-              <p className="text-center text-gray-500 py-12">No followers yet.</p>
-            ) : (
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              followers.map((f: any) => (
-                <UserRow key={f.id} person={f} currentUser={user} onProfileClick={(id) => router.push(`/profile/${id}`)} />
-              ))
-            )}
-          </div>
-        )}
+          {/* FOLLOWERS */}
+          {activeTab === "followers" && (
+            <div className="space-y-3">
+              {followers.length === 0 ? (
+                <p className="text-center text-gray-500 py-12">No followers yet.</p>
+              ) : (
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                followers.map((f: any) => (
+                  <UserRow key={f.id} person={f} currentUser={user} onProfileClick={(id) => router.push(`/profile/${id}`)} />
+                ))
+              )}
+            </div>
+          )}
 
-        {/* FOLLOWING */}
-        {activeTab === "following" && (
-          <div className="space-y-3">
-            {following.length === 0 ? (
-              <p className="text-center text-gray-500 py-12">Not following anyone yet.</p>
-            ) : (
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              following.map((f: any) => (
-                <UserRow key={f.id} person={f} currentUser={user} onProfileClick={(id) => router.push(`/profile/${id}`)} />
-              ))
-            )}
-          </div>
-        )}
+          {/* FOLLOWING */}
+          {activeTab === "following" && (
+            <div className="space-y-3">
+              {following.length === 0 ? (
+                <p className="text-center text-gray-500 py-12">Not following anyone yet.</p>
+              ) : (
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                following.map((f: any) => (
+                  <UserRow key={f.id} person={f} currentUser={user} onProfileClick={(id) => router.push(`/profile/${id}`)} />
+                ))
+              )}
+            </div>
+          )}
 
         </div>
       </div>

@@ -6,7 +6,9 @@ import MobileBottomMenu from '../home/components/MobileBottomMenu';
 import MobileFAB from '../home/components/MobileFAB';
 import BottomNavigationBar from '../home/components/BottomNavigationBar';
 import SearchBar from '../components/SearchBar';
+import AuthGateModal from '../components/AuthGateModal';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@/context/UserContext';
 
 interface HomeLayoutProps {
   children: ReactNode;
@@ -16,6 +18,7 @@ interface HomeLayoutProps {
 export default function HomeLayout({ children, showSidebar = true }: HomeLayoutProps) {
   const [isMobileBottomMenuOpen, setIsMobileBottomMenuOpen] = useState(false);
   const router = useRouter();
+  const { user, loading } = useUser();
 
   const closeMobileBottomMenu = () => setIsMobileBottomMenuOpen(false);
 
@@ -39,6 +42,26 @@ export default function HomeLayout({ children, showSidebar = true }: HomeLayoutP
         <div className="flex-1 min-w-0">
           <SearchBar />
         </div>
+
+        {/* Auth buttons — only shown to guests */}
+        {!loading && !user && (
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={() => router.push('/auth/signin')}
+              className="px-4 py-1.5 rounded-full text-sm font-semibold text-gray-200 hover:text-white transition-all duration-200 hover:bg-white/10"
+              style={{ border: '1px solid rgba(255,255,255,0.18)' }}
+            >
+              Log In
+            </button>
+            <button
+              onClick={() => router.push('/auth/signup')}
+              className="px-4 py-1.5 rounded-full text-sm font-semibold text-white transition-all duration-200 hover:scale-105 shadow-md"
+              style={{ background: 'linear-gradient(135deg, #f97316, #ec4899)' }}
+            >
+              Sign Up
+            </button>
+          </div>
+        )}
       </header>
 
       {/* ── Body ── */}
@@ -63,6 +86,9 @@ export default function HomeLayout({ children, showSidebar = true }: HomeLayoutP
 
       <MobileFAB />
       <BottomNavigationBar />
+
+      {/* Auth Gate Modal — mounted once here, opened from anywhere */}
+      <AuthGateModal />
     </div>
   );
 }

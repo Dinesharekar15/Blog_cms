@@ -31,7 +31,7 @@ export default function HeaderNavigation() {
             </a>
             
             {/* Primary CTA Button */}
-            <a href="/auth/signup" className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold px-4 py-2 lg:px-6 lg:py-2.5 rounded-full text-sm lg:text-base transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer inline-block">
+            <a href="/home" className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold px-4 py-2 lg:px-6 lg:py-2.5 rounded-full text-sm lg:text-base transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer inline-block">
               Start Publishing
             </a>
 

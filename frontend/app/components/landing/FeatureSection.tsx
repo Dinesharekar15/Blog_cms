@@ -55,7 +55,7 @@ export default function FeatureSection() {
               </p>
               
               {/* CTA Button */}
-              <Link href="/auth/signup" className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold px-8 py-4 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg inline-block text-center">
+              <Link href="/home" className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold px-8 py-4 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg inline-block text-center">
                 Start exploring in the app
               </Link>
             </div>

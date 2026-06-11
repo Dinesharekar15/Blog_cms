@@ -77,6 +77,7 @@ const  allBlogs = asyncHandler(async (req: CustomRequest, res: Response) => {
               id: true,
               name: true,
               email: true,
+              profileImg: true,
               createdAt: true,
               _count: {
                 select: {

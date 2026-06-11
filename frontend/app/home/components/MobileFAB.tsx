@@ -1,6 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation';
+import { useUser } from '@/context/UserContext';
+import { useAuthGate } from '@/context/AuthGateContext';
 
 interface MobileFABProps {
   onClick?: () => void;
@@ -8,8 +10,11 @@ interface MobileFABProps {
 
 export default function MobileFAB({ onClick }: MobileFABProps) {
   const router = useRouter();
+  const { user } = useUser();
+  const { openAuthGate } = useAuthGate();
 
   const handleClick = () => {
+    if (!user) { openAuthGate(); return; }
     if (onClick) {
       onClick();
     } else {

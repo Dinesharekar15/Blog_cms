@@ -8,6 +8,8 @@ import { timeAgo } from "@/lib/timeago";
 import { UserHoverCard } from "@/app/components/UserHoverCard";
 import Link from "next/link";
 import { getProfileImageUrl } from "@/lib/cloudinary";
+import { useUser } from "@/context/UserContext";
+import { useAuthGate } from "@/context/AuthGateContext";
 export default function BlogDetailPage() {
   const param = useParams() as { blogId: string };
   const id = Number(param.blogId);
@@ -22,6 +24,8 @@ export default function BlogDetailPage() {
 
   const { blogs, addComment, comments, loadcommnets, likeBlog, unlikeBlog ,handelFollow,loadingUserId} =
     useBlogs();
+  const { user } = useUser();
+  const { openAuthGate } = useAuthGate();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -127,7 +131,10 @@ export default function BlogDetailPage() {
               <div className="flex items-center justify-between pt-4 border-t border-none">
                 <div className="flex items-center space-x-6">
                   <button
-                    onClick={() => blog.isLiked ? unlikeBlog(blog.id) : likeBlog(blog.id)}
+                    onClick={() => {
+                      if (!user) { openAuthGate(); return; }
+                      blog.isLiked ? unlikeBlog(blog.id) : likeBlog(blog.id);
+                    }}
                     className="flex items-center space-x-2 text-gray-400 hover:text-red-500  transition-colors duration-200 "
                   >
                     <svg
@@ -152,6 +159,7 @@ export default function BlogDetailPage() {
 
                   <button
                     onClick={() => {
+                      if (!user) { openAuthGate(); return; }
                       setCommentClick(true);
                       setTimeout(() => {
                         commentRef.current?.focus();
@@ -204,7 +212,10 @@ export default function BlogDetailPage() {
                     ref={commentRef}
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
-                    onFocus={() => setCommentClick(true)}
+                    onFocus={() => {
+                      if (!user) { openAuthGate(); return; }
+                      setCommentClick(true);
+                    }}
                     placeholder="Add a comment..."
                     rows={commentClick ? 4 : 1}
                     className="w-full bg-transparent text-white p-3 resize-none outline-none"
@@ -283,7 +294,10 @@ export default function BlogDetailPage() {
 
                     <div className="mt-1 ml-12">
                       <button
-                        onClick={() => setReplyTo(c.id)}
+                        onClick={() => {
+                          if (!user) { openAuthGate(); return; }
+                          setReplyTo(c.id);
+                        }}
                         className="cursor-pointer flex items-center space-x-1 text-xs text-gray-400 hover:text-blue-400 transition">
                         <svg
                           className="w-4 h-4"

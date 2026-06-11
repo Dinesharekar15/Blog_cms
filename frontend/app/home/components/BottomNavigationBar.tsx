@@ -3,9 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MobileFAB from './MobileFAB';
+import { useUser } from '@/context/UserContext';
+import { useAuthGate } from '@/context/AuthGateContext';
 export default function BottomNavigationBar() {
   const [activeItem, setActiveItem] = useState('home');
   const router = useRouter();
+  const { user } = useUser();
+  const { openAuthGate } = useAuthGate();
 
   const handleCreateClick = () => {
     router.push('/publish');
@@ -35,7 +39,11 @@ export default function BottomNavigationBar() {
 
           {/* Chat Icon */}
           <button
-            onClick={() => setActiveItem('chat')}
+            onClick={() => {
+              if (!user) { openAuthGate(); return; }
+              setActiveItem('chat');
+              router.push('/chat');
+            }}
             className={`cursor-pointer p-3 rounded-lg transition-colors duration-200 ${
               activeItem === 'chat'
                 ? 'text-orange-500 bg-gray-700'

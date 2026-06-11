@@ -32,8 +32,12 @@ api.interceptors.response.use(
       } catch {
         // Refresh failed — redirect to sign in only if not on a public page
         if (typeof window !== "undefined") {
-          const publicPaths = ["/", "/auth/signin", "/auth/signup"];
-          if (!publicPaths.includes(window.location.pathname)) {
+          const path = window.location.pathname;
+          const publicPaths = ["/", "/auth/signin", "/auth/signup", "/home", "/search"];
+          const isPublic =
+            publicPaths.includes(path) ||
+            path.startsWith("/blog/"); // blog detail pages are always public
+          if (!isPublic) {
             window.location.href = "/auth/signin";
           }
         }

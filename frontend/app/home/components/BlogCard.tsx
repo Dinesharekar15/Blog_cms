@@ -7,6 +7,7 @@ import { useUser } from "@/context/UserContext";
 import { UserHoverCard } from "@/app/components/UserHoverCard";
 import DOMPurify from "dompurify";
 import { getProfileImageUrl } from "@/lib/cloudinary";
+import { useAuthGate } from "@/context/AuthGateContext";
 
 export default function BlogCard() {
   const {
@@ -21,6 +22,7 @@ export default function BlogCard() {
     loadMore,
   } = useBlogs();
   const { user } = useUser();
+  const { openAuthGate } = useAuthGate();
 
   const sanitize = (html: string) => {
     if (typeof window === "undefined") return html; // SSR guard
@@ -49,10 +51,12 @@ export default function BlogCard() {
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
                       {getProfileImageUrl(blog.user.profileImg) ? (
                         // eslint-disable-next-line @next/next/no-img-element
+
                         <img src={getProfileImageUrl(blog.user.profileImg)!} alt={blog.user.name} className="w-full h-full object-cover" />
                       ) : (
                         blog.user.name.charAt(0).toUpperCase()
                       )}
+
                     </div>
                   </Link>
                   <div>
@@ -67,7 +71,7 @@ export default function BlogCard() {
                 {blog.user.id != user?.id && (
                   <button
                     disabled={loadingUserId === blog.user.id}
-                    onClick={() => { handelFollow(blog.user.id) }}
+                    onClick={() => { if (!user) { openAuthGate(); return; } handelFollow(blog.user.id); }}
                     className={`cursor-pointer px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${blog.user.isFollowing
                       ? "bg-gray-600 text-gray-300 hover:bg-gray-500"
                       : "bg-orange-500 text-white hover:bg-orange-600"
@@ -109,7 +113,10 @@ export default function BlogCard() {
               <div className="flex items-center justify-between pt-4 border-t border-none">
                 <div className="flex items-center space-x-6">
                   <button
-                    onClick={() => blog.isLiked ? unlikeBlog(blog.id) : likeBlog(blog.id)}
+                    onClick={() => {
+                      if (!user) { openAuthGate(); return; }
+                      blog.isLiked ? unlikeBlog(blog.id) : likeBlog(blog.id);
+                    }}
                     className="flex items-center space-x-2 text-gray-400 hover:text-red-500 transition-colors duration-200"
                   >
                     <svg

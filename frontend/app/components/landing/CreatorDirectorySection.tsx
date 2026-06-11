@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function CreatorDirectorySection() {
   const creators = [
     {
@@ -117,9 +119,9 @@ export default function CreatorDirectorySection() {
             
             {/* CTA Button */}
             <div className="flex justify-center">
-              <button className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold px-10 py-4 lg:px-12 lg:py-5 rounded-full text-lg lg:text-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+              <Link href="/home" className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold px-10 py-4 lg:px-12 lg:py-5 rounded-full text-lg lg:text-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl inline-block text-center">
                 Discover even more voices
-              </button>
+              </Link>
             </div>
           </div>
         </div>

@@ -26,4 +26,17 @@ const isUserAuthenticated =asyncHandler(async(req:CustomRequest,res:Response,nex
 
 })
 
-export{isUserAuthenticated }
+// Attaches user if token present, but never blocks the request
+const optionalAuth = asyncHandler(async (req: CustomRequest, res: Response, next: NextFunction) => {
+  const token = req.cookies.auth_token;
+  if (token) {
+    try {
+      req.user = jwt.verify(token, process.env.JWT_SECRET!);
+    } catch {
+      // Invalid token — treat as guest, don't block
+    }
+  }
+  next();
+});
+
+export { isUserAuthenticated, optionalAuth }

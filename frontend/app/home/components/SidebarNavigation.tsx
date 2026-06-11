@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
 import { getProfileImageUrl } from '@/lib/cloudinary';
+import { useAuthGate } from '@/context/AuthGateContext';
 
 interface SidebarNavigationProps {
   onActivityClick?: () => void;
@@ -14,6 +15,7 @@ type user = {
   email: string,
 }
 export default function SidebarNavigation({ onActivityClick, isActivityOpen }: SidebarNavigationProps) {
+  const { openAuthGate } = useAuthGate();
   const [activeNav, setActiveNav] = useState('home');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isAppearanceOpen, setIsAppearanceOpen] = useState(false);
@@ -72,7 +74,7 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen }: S
   ];
 
   const handleCreateClick = () => {
-    // Navigate to the publish page
+    if (!user) { openAuthGate(); return; }
     router.push('/publish');
   };
 
@@ -125,8 +127,8 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen }: S
             <li key={item.id}>
               <button
                 onClick={() => {
-                  // Handle navigation
                   if (item.id === 'chat') {
+                    if (!user) { openAuthGate(); return; }
                     setActiveNav(item.id);
                     router.push('/chat');
                   } else if (item.id === 'home') {
@@ -135,12 +137,12 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen }: S
                   } else if (item.id === 'dashboard') {
                     setActiveNav(item.id);
                     router.push('/dashboard');
-                  } else if (item.id === 'activity' && onActivityClick) {
-                    onActivityClick();
+                  } else if (item.id === 'activity') {
+                    if (!user) { openAuthGate(); return; }
+                    if (onActivityClick) onActivityClick();
                   } else {
                     setActiveNav(item.id);
                   }
-                  // Add more navigation cases as needed
                 }}
                 className={`w-full flex items-center space-x-3 md:justify-center lg:justify-start md:space-x-0 lg:space-x-3 px-4 md:px-2 lg:px-4 py-3 rounded-lg text-left md:text-center lg:text-left transition-all duration-200 cursor-pointer group relative ${(item.id === 'activity' && isActivityOpen) || (item.id !== 'activity' && activeNav === item.id)
                     ? 'bg-gray-800 text-white'
@@ -176,7 +178,23 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen }: S
         </div>
       </nav>
 
-      {/* User Profile Section */}
+      {/* User Profile Section — guest vs logged-in */}
+      {!user ? (
+        <div className="p-4 md:p-2 lg:p-4 border-t border-gray-800">
+          <button
+            onClick={openAuthGate}
+            className="w-full flex items-center justify-center md:justify-center lg:justify-start space-x-2 md:space-x-0 lg:space-x-2 px-3 py-2.5 rounded-lg text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] group relative"
+            style={{ background: 'linear-gradient(135deg, #f97316, #ec4899)' }}
+            title="Sign In"
+          >
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+            </svg>
+            <span className="md:hidden lg:block">Sign In</span>
+            <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 hidden md:block lg:hidden whitespace-nowrap pointer-events-none z-50">Sign In</span>
+          </button>
+        </div>
+      ) : (
       <div className="relative p-4 md:p-2 lg:p-4 border-t border-gray-800" ref={profileRef}>
         <button
           onClick={handleProfileClick}
@@ -321,6 +339,7 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen }: S
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }
