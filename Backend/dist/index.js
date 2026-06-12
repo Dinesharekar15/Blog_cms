@@ -4,11 +4,13 @@ import authRoutes from "./routes/authRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import cookieParser from 'cookie-parser';
+import dotenv from 'dotenv';
+dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    origin: "http://localhost:3000",
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
     credentials: true
 }));
 app.use('/api/v1/auth', authRoutes);

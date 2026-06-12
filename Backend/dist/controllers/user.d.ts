@@ -10,5 +10,9 @@ declare const unFollowUser: (req: CustomRequest, res: Response) => Promise<Respo
 declare const getUserFollowers: (req: CustomRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 declare const getUserFollowings: (req: CustomRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 declare const getUserBlogs: (req: CustomRequest, res: Response) => Promise<Response<any, Record<string, any>>>;
-export { loggedInUserProfile, loggedInUserBolgs, getUserMetaData, followUser, unFollowUser, getUserFollowers, getUserFollowings, getUserBlogs };
+declare const searchUsers: (req: CustomRequest, res: Response) => Promise<Response<any, Record<string, any>>>;
+declare const searchPosts: (req: CustomRequest, res: Response) => Promise<Response<any, Record<string, any>>>;
+declare const updateProfile: (req: CustomRequest, res: Response) => Promise<Response<any, Record<string, any>>>;
+declare const changePassword: (req: CustomRequest, res: Response) => Promise<Response<any, Record<string, any>>>;
+export { loggedInUserProfile, loggedInUserBolgs, getUserMetaData, followUser, unFollowUser, getUserFollowers, getUserFollowings, getUserBlogs, searchUsers, searchPosts, updateProfile, changePassword };
 //# sourceMappingURL=user.d.ts.map

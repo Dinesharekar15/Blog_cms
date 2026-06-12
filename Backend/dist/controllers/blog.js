@@ -47,36 +47,45 @@ const creatBlog = asyncHandler(async (req, res) => {
 //for home page
 const allBlogs = asyncHandler(async (req, res) => {
     const userId = Number(req.user?.id);
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(50, Number(req.query.limit) || 10);
+    const skip = (page - 1) * limit;
     try {
-        const blogs = await prisma.blog.findMany({
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        createdAt: true,
-                        _count: {
-                            select: {
-                                followers: true,
-                                following: true,
-                                blogs: true,
+        const [blogs, total] = await Promise.all([
+            prisma.blog.findMany({
+                skip,
+                take: limit,
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            profileImg: true,
+                            createdAt: true,
+                            _count: {
+                                select: {
+                                    followers: true,
+                                    following: true,
+                                    blogs: true,
+                                },
                             },
                         },
                     },
-                },
-                _count: {
-                    select: {
-                        like: true,
-                        comment: true,
+                    _count: {
+                        select: {
+                            like: true,
+                            comment: true,
+                        },
                     },
+                    like: userId ? { where: { userId } } : false,
                 },
-                like: userId ? { where: { userId } } : false,
-            },
-            orderBy: {
-                createdAt: "desc",
-            },
-        });
+                orderBy: {
+                    createdAt: "desc",
+                },
+            }),
+            prisma.blog.count(),
+        ]);
         //isFollowing Logic
         let followingSet = new Set();
         if (userId) {
@@ -102,7 +111,13 @@ const allBlogs = asyncHandler(async (req, res) => {
                 isFollowing: userId ? followingSet.has(blog.user.id) : false,
             },
         }));
-        res.status(200).json({ msg: "All Bogs ", formattedBlog });
+        res.status(200).json({
+            msg: "All Blogs",
+            formattedBlog,
+            total,
+            page,
+            totalPages: Math.ceil(total / limit),
+        });
         return;
     }
     catch (error) {

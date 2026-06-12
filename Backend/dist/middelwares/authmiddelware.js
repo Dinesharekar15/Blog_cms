@@ -17,5 +17,18 @@ const isUserAuthenticated = asyncHandler(async (req, res, next) => {
         return;
     }
 });
-export { isUserAuthenticated };
+// Attaches user if token present, but never blocks the request
+const optionalAuth = asyncHandler(async (req, res, next) => {
+    const token = req.cookies.auth_token;
+    if (token) {
+        try {
+            req.user = jwt.verify(token, process.env.JWT_SECRET);
+        }
+        catch {
+            // Invalid token — treat as guest, don't block
+        }
+    }
+    next();
+});
+export { isUserAuthenticated, optionalAuth };
 //# sourceMappingURL=authmiddelware.js.map
