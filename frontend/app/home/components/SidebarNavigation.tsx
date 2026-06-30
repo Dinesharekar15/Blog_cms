@@ -18,10 +18,7 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen }: S
   const { openAuthGate } = useAuthGate();
   const [activeNav, setActiveNav] = useState('home');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isAppearanceOpen, setIsAppearanceOpen] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState<'auto' | 'light' | 'dark'>('dark');
   const profileRef = useRef<HTMLDivElement>(null);
-  const appearanceRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   // const [user,setUser]= useState<user|null>(null);
@@ -47,7 +44,6 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen }: S
     function handleClickOutside(event: MouseEvent) {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
         setIsProfileOpen(false);
-        setIsAppearanceOpen(false); // Also close theme dropdown
       }
     }
 
@@ -68,7 +64,6 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen }: S
       section: 'settings',
       items: [
         { id: 'edit-profile', label: 'Edit Profile', icon: '✏️' },
-        { id: 'appearance', label: 'Appearance', icon: '🎨' }
       ]
     }
   ];
@@ -79,21 +74,13 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen }: S
   };
 
   const handleProfileClick = () => {
-    const wasOpen = isProfileOpen;
     setIsProfileOpen(!isProfileOpen);
-    // Close theme dropdown when profile popup closes
-    if (wasOpen) {
-      setIsAppearanceOpen(false);
-    }
   };
 
   const handleProfileMenuClick = async (itemId: string) => {
     if (itemId === 'sign-out') {
       setIsProfileOpen(false);
       await signout();
-    } else if (itemId === 'appearance') {
-      setIsAppearanceOpen(!isAppearanceOpen);
-      return;
     } else if (itemId === 'view-profile' && user) {
       router.push(`/profile/${user.id}`);
       setIsProfileOpen(false);
@@ -106,12 +93,6 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen }: S
     }
   };
 
-  const handleThemeChange = (theme: 'auto' | 'light' | 'dark') => {
-    setCurrentTheme(theme);
-    // Here you would implement actual theme switching logic
-    console.log(`Theme changed to: ${theme}`);
-    // Don't close the dropdown - let user click "Appearance" to close it
-  };
 
   return (
     <div
@@ -222,7 +203,7 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen }: S
           </div>
           {/* Tooltip for tablet mode only */}
           <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 hidden md:block lg:hidden whitespace-nowrap pointer-events-none z-50">
-            John Doe
+            {user?.name}
           </span>
         </button>
 
@@ -260,65 +241,14 @@ export default function SidebarNavigation({ onActivityClick, isActivityOpen }: S
                 <div key={section.section} className={sectionIndex > 0 ? 'border-t border-gray-700' : ''}>
                   <div className="py-2">
                     {section.items.map((item) => (
-                      <div key={item.id} className="relative">
-                        {item.id === 'appearance' ? (
-                          <div>
-                            <button
-                              onClick={() => handleProfileMenuClick(item.id)}
-                              className={`w-full flex items-center space-x-3 px-4 py-2 text-left transition-colors duration-200 cursor-pointer ${isAppearanceOpen
-                                  ? 'bg-gray-700 text-white'
-                                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                                }`}
-                            >
-                              <span className="text-lg">{item.icon}</span>
-                              <span className="text-sm font-medium">{item.label}</span>
-                              <svg
-                                className={`w-4 h-4 ml-auto text-gray-400 transition-transform duration-200 ${isAppearanceOpen ? 'rotate-90' : ''
-                                  }`}
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                              </svg>
-                            </button>
-
-                            {/* Theme Options Below Appearance */}
-                            {isAppearanceOpen && (
-                              <div className="ml-4 mt-1 space-y-1">
-                                {[
-                                  { id: 'auto', label: 'Auto', icon: '⚙️' },
-                                  { id: 'light', label: 'Light', icon: '☀️' },
-                                  { id: 'dark', label: 'Dark', icon: '🌙' }
-                                ].map((themeOption) => (
-                                  <button
-                                    key={themeOption.id}
-                                    onClick={() => handleThemeChange(themeOption.id as 'auto' | 'light' | 'dark')}
-                                    className={`w-full flex items-center space-x-3 px-4 py-2 text-left text-sm rounded-md transition-colors duration-200 cursor-pointer ${currentTheme === themeOption.id
-                                        ? 'bg-gray-600 text-white font-semibold'
-                                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                                      }`}
-                                  >
-                                    <span className="text-base">{themeOption.icon}</span>
-                                    <span className="flex-1">{themeOption.label}</span>
-                                    {currentTheme === themeOption.id && (
-                                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                      </svg>
-                                    )}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => handleProfileMenuClick(item.id)}
-                            className="w-full flex items-center space-x-3 px-4 py-2 text-left text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-200 cursor-pointer"
-                          >
-                            <span className="text-lg">{item.icon}</span>
-                            <span className="text-sm font-medium">{item.label}</span>
-                          </button>
-                        )}
+                      <div key={item.id}>
+                        <button
+                          onClick={() => handleProfileMenuClick(item.id)}
+                          className="w-full flex items-center space-x-3 px-4 py-2 text-left text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-200 cursor-pointer"
+                        >
+                          <span className="text-lg">{item.icon}</span>
+                          <span className="text-sm font-medium">{item.label}</span>
+                        </button>
                       </div>
                     ))}
                   </div>

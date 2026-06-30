@@ -1,3 +1,2 @@
-import { Resend } from "resend";
-export declare const resend: Resend;
+export {};
 //# sourceMappingURL=resend.d.ts.map

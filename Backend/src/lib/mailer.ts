@@ -1,14 +1,15 @@
-import { resend } from "./resend.js";
+import { transporter } from "./brevo.js";
 
-const FROM_EMAIL = process.env.FROM_EMAIL || "onboarding@resend.dev";
+const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@yourdomain.com";
 const APP_NAME = "BlogCMS";
 
 export async function sendOtpEmail(to: string, otp: string): Promise<void> {
-  const { error } = await resend.emails.send({
-    from: `${APP_NAME} <${FROM_EMAIL}>`,
-    to,
-    subject: `Your ${APP_NAME} verification code: ${otp}`,
-    html: `
+  try {
+    await transporter.sendMail({
+      from: `${APP_NAME} <${FROM_EMAIL}>`,
+      to,
+      subject: `Your ${APP_NAME} verification code: ${otp}`,
+      html: `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -57,20 +58,20 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
       </body>
       </html>
     `,
-  });
-
-  if (error) {
-    console.error("Resend email error:", error);
-    throw new Error(`Failed to send OTP email: ${error.message}`);
+    });
+  } catch (error) {
+    console.error("Brevo sendOtpEmail error:", error);
+    throw new Error(`Failed to send OTP email: ${(error as Error).message}`);
   }
 }
 
 export async function sendPasswordResetEmail(to: string, otp: string): Promise<void> {
-  const { error } = await resend.emails.send({
-    from: `${APP_NAME} <${FROM_EMAIL}>`,
-    to,
-    subject: `Reset your ${APP_NAME} password`,
-    html: `
+  try {
+    await transporter.sendMail({
+      from: `${APP_NAME} <${FROM_EMAIL}>`,
+      to,
+      subject: `Reset your ${APP_NAME} password`,
+      html: `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -119,10 +120,9 @@ export async function sendPasswordResetEmail(to: string, otp: string): Promise<v
       </body>
       </html>
     `,
-  });
-
-  if (error) {
-    console.error("Resend password reset email error:", error);
-    throw new Error(`Failed to send password reset email: ${error.message}`);
+    });
+  } catch (error) {
+    console.error("Brevo sendPasswordResetEmail error:", error);
+    throw new Error(`Failed to send password reset email: ${(error as Error).message}`);
   }
 }

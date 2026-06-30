@@ -1,6 +1,4 @@
-import { Resend } from "resend";
-if (!process.env.RESEND_API_KEY) {
-    throw new Error("RESEND_API_KEY is not set in environment variables");
-}
-export const resend = new Resend(process.env.RESEND_API_KEY);
+// resend.ts — deprecated. Replaced by brevo.ts (Nodemailer + Brevo SMTP).
+// This file is kept to avoid breaking any stale imports during build.
+export {};
 //# sourceMappingURL=resend.js.map

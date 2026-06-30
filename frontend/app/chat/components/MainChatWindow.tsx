@@ -1,332 +1,489 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import dynamic from 'next/dynamic';
+import { fetchMessages, markConversationRead } from '@/services/chatService';
+import type { ChatMessage } from '@/services/chatService';
+import {
+  getSocket,
+  joinConversation,
+  leaveConversation,
+  sendSocketMessage,
+  emitReadMessages,
+} from '@/lib/socket';
 
-interface Chat {
-  id: string;
+// Dynamically import EmojiPicker to avoid SSR issues
+const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false });
+
+interface OtherUser {
+  id: number;
   name: string;
-  type: 'direct' | 'group';
-  avatar: string;
-  lastMessage: {
-    text: string;
-    timestamp: string;
-    sender: string;
-    unread?: boolean;
-  };
-  participants: number;
-}
-
-interface Message {
-  id: string;
-  sender: {
-    name: string;
-    avatar: string;
-    isYou?: boolean;
-  };
-  content: {
-    type: 'text' | 'image' | 'card';
-    text?: string;
-    imageUrl?: string;
-    cardData?: {
-      title: string;
-      description: string;
-      imageUrl: string;
-      link: string;
-    };
-  };
-  timestamp: string;
-  engagement: {
-    likes: number;
-    comments: number;
-    shares: number;
-  };
-  isLiked?: boolean;
+  profileImg: string | null;
 }
 
 interface MainChatWindowProps {
-  chat?: Chat;
+  conversationId: number | null;
+  otherUser: OtherUser | null;
+  myId: number;
   onBack: () => void;
   showBackButton: boolean;
 }
 
-export default function MainChatWindow({ chat, onBack, showBackButton }: MainChatWindowProps) {
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatMsgTime(dateStr: string): string {
+  return new Date(dateStr).toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+}
+
+function formatDateDivider(dateStr: string): string {
+  const date = new Date(dateStr);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) return 'Today';
+  if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+  return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+}
+
+function Avatar({ name, profileImg, size = 'sm' }: { name: string; profileImg: string | null; size?: 'sm' | 'md' | 'lg' }) {
+  const sizes = { sm: 'w-8 h-8 text-xs', md: 'w-10 h-10 text-sm', lg: 'w-12 h-12 text-sm' };
+  const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+  // profileImg is a Cloudinary public_id — build the full URL
+  const imgSrc = profileImg
+    ? profileImg.startsWith('http')
+      ? profileImg
+      : `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${profileImg}`
+    : null;
+
+  if (imgSrc) {
+    return <img src={imgSrc} alt={name} className={`${sizes[size]} rounded-full object-cover flex-shrink-0`} />;
+  }
+  return (
+    <div className={`${sizes[size]} rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center font-semibold text-white flex-shrink-0`}>
+      {initials}
+    </div>
+  );
+}
+
+// Group messages by date
+function groupByDate(messages: ChatMessage[]): Array<{ date: string; messages: ChatMessage[] }> {
+  const groups: Record<string, ChatMessage[]> = {};
+  messages.forEach(msg => {
+    const date = new Date(msg.createdAt).toDateString();
+    if (!groups[date]) groups[date] = [];
+    groups[date].push(msg);
+  });
+  return Object.entries(groups).map(([date, messages]) => ({ date, messages }));
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+export default function MainChatWindow({
+  conversationId,
+  otherUser,
+  myId,
+  onBack,
+  showBackButton,
+}: MainChatWindowProps) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [messageText, setMessageText] = useState('');
+  const [hasMore, setHasMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<number | null>(null);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-  // Mock message data
-  const messages: Message[] = [
-    {
-      id: '1',
-      sender: {
-        name: 'Sarah Chen',
-        avatar: '👩‍💻'
-      },
-      content: {
-        type: 'text',
-        text: 'Thanks for the latest post! Really enjoyed the insights on modern web development.'
-      },
-      timestamp: '2:34 PM',
-      engagement: {
-        likes: 12,
-        comments: 3,
-        shares: 1
-      },
-      isLiked: true
-    },
-    {
-      id: '2',
-      sender: {
-        name: 'Marcus Williams',
-        avatar: '👨‍💼'
-      },
-      content: {
-        type: 'card',
-        cardData: {
-          title: 'Building a $10M SaaS: Lessons from 5 Years of Failures',
-          description: 'Every entrepreneur talks about their successes, but today I\'m sharing the brutal failures...',
-          imageUrl: '💼',
-          link: '#'
-        }
-      },
-      timestamp: '2:45 PM',
-      engagement: {
-        likes: 24,
-        comments: 8,
-        shares: 5
-      }
-    },
-    {
-      id: '3',
-      sender: {
-        name: 'You',
-        avatar: '👤',
-        isYou: true
-      },
-      content: {
-        type: 'text',
-        text: 'Great insights Marcus! I particularly resonated with your points about customer validation. Have you considered writing a follow-up about pivoting strategies?'
-      },
-      timestamp: '3:12 PM',
-      engagement: {
-        likes: 8,
-        comments: 2,
-        shares: 0
-      }
-    },
-    {
-      id: '4',
-      sender: {
-        name: 'Elena Rodriguez',
-        avatar: '🎨'
-      },
-      content: {
-        type: 'image',
-        imageUrl: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=400&h=300&fit=crop',
-        text: 'Just finished this new design concept. What do you think?'
-      },
-      timestamp: '3:28 PM',
-      engagement: {
-        likes: 15,
-        comments: 6,
-        shares: 3
-      }
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const emojiButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Auto-scroll to bottom
+  const scrollToBottom = useCallback((smooth = true) => {
+    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'instant' });
+  }, []);
+
+  // Load messages on conversation change
+  const loadMessages = useCallback(async (convId: number) => {
+    setLoadingMessages(true);
+    setMessages([]);
+    try {
+      const data = await fetchMessages(convId);
+      setMessages(data.messages);
+      setHasMore(data.hasMore);
+      setNextCursor(data.nextCursor);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingMessages(false);
     }
-  ];
+  }, []);
 
-  const handleSendMessage = () => {
-    if (messageText.trim()) {
-      // Handle send message logic here
-      console.log('Sending message:', messageText);
-      setMessageText('');
+  // Load older messages on scroll up
+  const loadOlder = useCallback(async () => {
+    if (!conversationId || !nextCursor || loadingMessages) return;
+    setLoadingMessages(true);
+    try {
+      const data = await fetchMessages(conversationId, nextCursor);
+      setMessages(prev => [...data.messages, ...prev]);
+      setHasMore(data.hasMore);
+      setNextCursor(data.nextCursor);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingMessages(false);
     }
-  };
+  }, [conversationId, nextCursor, loadingMessages]);
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  // Join room + load messages when conversation changes
+  useEffect(() => {
+    if (!conversationId) return;
+
+    joinConversation(conversationId);
+    loadMessages(conversationId);
+
+    // Mark as read
+    markConversationRead(conversationId);
+    emitReadMessages(conversationId);
+
+    return () => { leaveConversation(conversationId); };
+  }, [conversationId, loadMessages]);
+
+  // Scroll to bottom after initial load
+  useEffect(() => {
+    if (messages.length > 0 && !loadingMessages) {
+      scrollToBottom(false);
+    }
+  }, [conversationId, loadingMessages]);
+
+  // Socket: incoming messages
+  useEffect(() => {
+    const socket = getSocket();
+
+    const handleMessageReceived = (data: { conversationId: number; message: ChatMessage }) => {
+      if (data.conversationId !== conversationId) return;
+      setMessages(prev => [...prev, data.message]);
+      // If the message is from the other user, mark as read
+      if (data.message.senderId !== myId) {
+        emitReadMessages(data.conversationId);
+        markConversationRead(data.conversationId);
+      }
+      setTimeout(() => scrollToBottom(true), 50);
+    };
+
+    // Read receipt — update isRead on our sent messages
+    const handleMessagesRead = (data: { conversationId: number }) => {
+      if (data.conversationId !== conversationId) return;
+      setMessages(prev =>
+        prev.map(m => (m.senderId === myId ? { ...m, isRead: true } : m))
+      );
+    };
+
+    socket.on('message_received', handleMessageReceived);
+    socket.on('messages_read', handleMessagesRead);
+    return () => {
+      socket.off('message_received', handleMessageReceived);
+      socket.off('messages_read', handleMessagesRead);
+    };
+  }, [conversationId, myId, scrollToBottom]);
+
+  // Send message
+  const handleSend = useCallback(() => {
+    if (!conversationId || !messageText.trim() || isSending) return;
+    setIsSending(true);
+    sendSocketMessage(conversationId, messageText.trim());
+    setMessageText('');
+    // Reset textarea height
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
+    setIsSending(false);
+    setTimeout(() => scrollToBottom(true), 50);
+  }, [conversationId, messageText, isSending, scrollToBottom]);
+
+  // Enter to send, Shift+Enter for newline
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      handleSend();
     }
   };
 
-  const toggleLike = (messageId: string) => {
-    // Handle like toggle logic here
-    console.log('Toggling like for message:', messageId);
+  // Auto-resize textarea
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessageText(e.target.value);
+    const ta = e.target;
+    ta.style.height = 'auto';
+    ta.style.height = `${Math.min(ta.scrollHeight, 140)}px`;
   };
 
-  if (!chat) {
+  // Insert emoji at cursor position in textarea
+  const handleEmojiClick = useCallback((emojiData: { emoji: string }) => {
+    const ta = textareaRef.current;
+    if (!ta) {
+      setMessageText(prev => prev + emojiData.emoji);
+      return;
+    }
+    const start = ta.selectionStart ?? ta.value.length;
+    const end = ta.selectionEnd ?? ta.value.length;
+    const newText = ta.value.slice(0, start) + emojiData.emoji + ta.value.slice(end);
+    setMessageText(newText);
+    // Restore cursor position after emoji
+    requestAnimationFrame(() => {
+      ta.selectionStart = start + emojiData.emoji.length;
+      ta.selectionEnd = start + emojiData.emoji.length;
+      ta.focus();
+      ta.style.height = 'auto';
+      ta.style.height = `${Math.min(ta.scrollHeight, 140)}px`;
+    });
+  }, []);
+
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    if (!showEmojiPicker) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(e.target as Node) &&
+        !emojiButtonRef.current?.contains(e.target as Node)
+      ) {
+        setShowEmojiPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showEmojiPicker]);
+
+  // ─── Empty state ────────────────────────────────────────────────────────────
+  if (!conversationId || !otherUser) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-900">
+      <div className="flex-1 flex items-center justify-center bg-gray-950">
         <div className="text-center">
-          <div className="w-24 h-24 mx-auto mb-4 bg-gray-800 rounded-full flex items-center justify-center">
-            <svg className="w-12 h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          <div className="w-20 h-20 mx-auto mb-4 bg-gray-800/50 rounded-full flex items-center justify-center">
+            <svg className="w-9 h-9 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           </div>
-          <h3 className="text-xl font-semibold text-white mb-2">Select a chat</h3>
-          <p className="text-gray-400">Choose a conversation from the sidebar to start messaging</p>
+          <h3 className="text-lg font-semibold text-white mb-1">Your messages</h3>
+          <p className="text-sm text-gray-500">Search for someone or select a conversation to start messaging</p>
         </div>
       </div>
     );
   }
 
+  const groupedMessages = groupByDate(messages);
+
   return (
-    <div className="flex flex-col h-full bg-gray-900">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800">
-        <div className="flex items-center space-x-3">
+    <div className="flex flex-col h-full bg-gray-950">
+
+      {/* ── Header ── */}
+      <div className="flex items-center justify-between px-4 py-3 bg-gray-900 border-b border-gray-700/50 flex-shrink-0">
+        <div className="flex items-center gap-3">
           {showBackButton && (
-            <button 
+            <button
               onClick={onBack}
-              className="p-2 hover:bg-gray-700 rounded-lg transition-colors md:hidden"
+              className="p-1.5 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors md:hidden"
             >
-              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
           )}
-          
-          <div className="w-10 h-10 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full flex items-center justify-center text-lg">
-            {chat.avatar}
-          </div>
-          
+
+          <Avatar name={otherUser.name} profileImg={otherUser.profileImg} size="md" />
+
           <div>
-            <h2 className="font-semibold text-white">{chat.name}</h2>
-            {chat.type === 'group' && (
-              <p className="text-sm text-gray-400">{chat.participants} participants</p>
-            )}
+            <h2 className="font-semibold text-white text-sm leading-tight">{otherUser.name}</h2>
+            <p className="text-xs text-green-400 flex items-center gap-1 mt-0.5">
+              <span className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+              Active
+            </p>
           </div>
         </div>
-        
-        <button className="p-2 hover:bg-gray-700 rounded-lg transition-colors">
-          <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-          </svg>
-        </button>
+
+        <div className="flex items-center gap-1">
+          <button className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors" title="View profile">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </button>
+          <button className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors" title="More options">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
+            </svg>
+          </button>
+        </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {messages.map((message) => (
-          <div key={message.id} className="flex space-x-3">
-            {/* Avatar */}
-            <div className="w-10 h-10 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full flex items-center justify-center text-sm flex-shrink-0">
-              {message.sender.avatar}
+      {/* ── Messages ── */}
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto px-4 py-4 space-y-1 scrollbar-auto-hide"
+      >
+        {/* Load more button */}
+        {hasMore && (
+          <div className="flex justify-center mb-4">
+            <button
+              onClick={loadOlder}
+              disabled={loadingMessages}
+              className="text-xs text-orange-400 hover:text-orange-300 bg-gray-800 hover:bg-gray-700 px-4 py-1.5 rounded-full transition-all disabled:opacity-50"
+            >
+              {loadingMessages ? 'Loading...' : 'Load earlier messages'}
+            </button>
+          </div>
+        )}
+
+        {loadingMessages && messages.length === 0 && (
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className={`flex gap-2 animate-pulse ${i % 2 === 0 ? '' : 'flex-row-reverse'}`}>
+                <div className="w-8 h-8 rounded-full bg-gray-800 flex-shrink-0" />
+                <div className={`h-10 bg-gray-800 rounded-2xl ${i % 2 === 0 ? 'w-48' : 'w-36'}`} />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {groupedMessages.map(({ date, messages: dayMessages }) => (
+          <div key={date}>
+            {/* Date divider */}
+            <div className="flex items-center gap-3 my-5">
+              <div className="flex-1 h-px bg-gray-800" />
+              <span className="text-[11px] text-gray-500 font-medium px-2">
+                {formatDateDivider(dayMessages[0].createdAt)}
+              </span>
+              <div className="flex-1 h-px bg-gray-800" />
             </div>
 
-            {/* Message Content */}
-            <div className="flex-1 min-w-0">
-              {/* Sender Info */}
-              <div className="flex items-center space-x-2 mb-2">
-                <h4 className={`text-sm font-medium ${
-                  message.sender.isYou ? 'text-orange-400' : 'text-white'
-                }`}>
-                  {message.sender.name}
-                </h4>
-                <span className="text-xs text-gray-400">{message.timestamp}</span>
-              </div>
+            {/* Messages */}
+            <div className="space-y-1">
+              {dayMessages.map((msg, idx) => {
+                const isMine = msg.senderId === myId;
+                const prevMsg = idx > 0 ? dayMessages[idx - 1] : null;
+                const showAvatar = !isMine && (prevMsg?.senderId !== msg.senderId);
+                const isConsecutive = prevMsg?.senderId === msg.senderId;
 
-              {/* Message Bubble */}
-              <div className="bg-gray-800 rounded-lg p-4 mb-3 border border-gray-700">
-                {message.content.type === 'text' && (
-                  <p className="text-gray-300 leading-relaxed">{message.content.text}</p>
-                )}
-
-                {message.content.type === 'image' && (
-                  <div>
-                    {message.content.text && (
-                      <p className="text-gray-300 mb-3">{message.content.text}</p>
+                return (
+                  <div
+                    key={msg.id}
+                    className={`flex items-end gap-2 ${isMine ? 'flex-row-reverse' : 'flex-row'} ${isConsecutive ? 'mt-0.5' : 'mt-3'}`}
+                  >
+                    {/* Avatar for received messages */}
+                    {!isMine && (
+                      <div className="w-8 flex-shrink-0">
+                        {showAvatar ? (
+                          <Avatar name={msg.sender.name} profileImg={msg.sender.profileImg} size="sm" />
+                        ) : null}
+                      </div>
                     )}
-                    <img 
-                      src={message.content.imageUrl} 
-                      alt="Shared image"
-                      className="rounded-lg max-w-full h-auto"
-                    />
-                  </div>
-                )}
 
-                {message.content.type === 'card' && message.content.cardData && (
-                  <div className="border border-gray-600 rounded-lg overflow-hidden">
-                    <div className="p-4">
-                      <div className="flex space-x-3">
-                        <div className="w-16 h-16 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg flex items-center justify-center text-2xl flex-shrink-0">
-                          {message.content.cardData.imageUrl}
-                        </div>
-                        <div className="flex-1">
-                          <h5 className="font-semibold text-white mb-1 line-clamp-2">
-                            {message.content.cardData.title}
-                          </h5>
-                          <p className="text-sm text-gray-400 line-clamp-2">
-                            {message.content.cardData.description}
-                          </p>
-                        </div>
+                    {/* Bubble */}
+                    <div className={`max-w-[65%] ${isMine ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+                      <div
+                        className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words ${
+                          isMine
+                            ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-br-sm shadow-lg shadow-orange-500/20'
+                            : 'bg-gray-800 text-gray-100 rounded-bl-sm border border-gray-700/50'
+                        }`}
+                      >
+                        {msg.content}
+                      </div>
+
+                      {/* Time + read receipt */}
+                      <div className={`flex items-center gap-1 px-1 ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
+                        <span className="text-[10px] text-gray-600">{formatMsgTime(msg.createdAt)}</span>
+                        {isMine && (
+                          <span title={msg.isRead ? 'Read' : 'Delivered'}>
+                            {msg.isRead ? (
+                              // Double blue/orange ticks — read
+                              <svg className="w-3.5 h-3.5 text-orange-400" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18 7l-9.9 9.9-4.5-4.5 1.4-1.4 3.1 3.1L16.6 5.6 18 7zm-2.5-2.5l-9.9 9.9-1.4-1.4 9.9-9.9 1.4 1.4z" />
+                              </svg>
+                            ) : (
+                              // Single gray tick — delivered
+                              <svg className="w-3.5 h-3.5 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                              </svg>
+                            )}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
-                )}
-              </div>
-
-              {/* Engagement */}
-              <div className="flex items-center space-x-4 text-sm text-gray-400">
-                <button 
-                  onClick={() => toggleLike(message.id)}
-                  className={`flex items-center space-x-1 hover:text-orange-400 transition-colors ${
-                    message.isLiked ? 'text-orange-400' : ''
-                  }`}
-                >
-                  <svg className="w-4 h-4" fill={message.isLiked ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                  <span>{message.engagement.likes}</span>
-                </button>
-                
-                <button className="flex items-center space-x-1 hover:text-blue-400 transition-colors">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                  <span>{message.engagement.comments}</span>
-                </button>
-                
-                <button className="flex items-center space-x-1 hover:text-green-400 transition-colors">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                  </svg>
-                  <span>{message.engagement.shares}</span>
-                </button>
-              </div>
+                );
+              })}
             </div>
           </div>
         ))}
+
+        <div ref={messagesEndRef} />
       </div>
 
-      {/* Message Input */}
-      <div className="p-4 border-t border-gray-700 bg-gray-800">
-        <div className="flex items-end space-x-3">
-          {/* Attachment Button */}
-          <button className="p-2 hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0">
-            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+      {/* ── Input area ── */}
+      <div className="relative px-4 pt-3 pb-16 md:pb-3 bg-gray-900 border-t border-gray-700/50 flex-shrink-0">
+
+        {/* Emoji Picker — floats above the input bar */}
+        {showEmojiPicker && (
+          <div
+            ref={emojiPickerRef}
+            className="absolute bottom-full left-2 mb-2 z-50 shadow-2xl rounded-2xl overflow-hidden"
+          >
+            <EmojiPicker
+              onEmojiClick={handleEmojiClick}
+              theme={'dark' as any}
+              skinTonesDisabled
+              searchDisabled={false}
+              height={380}
+              width={320}
+              previewConfig={{ showPreview: false }}
+            />
+          </div>
+        )}
+
+        <div className="flex items-end gap-2">
+          {/* Emoji toggle button */}
+          <button
+            ref={emojiButtonRef}
+            onClick={() => setShowEmojiPicker(prev => !prev)}
+            className={`p-2 rounded-xl transition-colors flex-shrink-0 mb-0.5 ${
+              showEmojiPicker
+                ? 'bg-orange-500/20 text-orange-400'
+                : 'hover:bg-gray-800 text-gray-500 hover:text-gray-300'
+            }`}
+            title="Emoji"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </button>
 
-          {/* Message Input */}
+          {/* Textarea */}
           <div className="flex-1 relative">
             <textarea
+              ref={textareaRef}
               value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type your message..."
+              onChange={handleTextareaChange}
+              onKeyDown={handleKeyDown}
+              placeholder={`Message ${otherUser.name}...`}
               rows={1}
-              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 resize-none"
+              className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-2xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/40 resize-none transition-all leading-relaxed"
+              style={{ minHeight: '44px', maxHeight: '140px' }}
             />
           </div>
 
-          {/* Send Button */}
+          {/* Send button */}
           <button
-            onClick={handleSendMessage}
-            disabled={!messageText.trim()}
-            className={`p-3 rounded-lg transition-colors flex-shrink-0 ${
-              messageText.trim() 
-                ? 'bg-orange-500 hover:bg-orange-600 text-white' 
-                : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+            onClick={handleSend}
+            disabled={!messageText.trim() || isSending}
+            className={`p-2.5 rounded-xl transition-all duration-200 flex-shrink-0 mb-0.5 ${
+              messageText.trim()
+                ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 active:scale-95'
+                : 'bg-gray-800 text-gray-600 cursor-not-allowed'
             }`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -334,6 +491,7 @@ export default function MainChatWindow({ chat, onBack, showBackButton }: MainCha
             </svg>
           </button>
         </div>
+        <p className="text-[10px] text-gray-700 mt-1.5 ml-1">Enter to send · Shift+Enter for new line</p>
       </div>
     </div>
   );

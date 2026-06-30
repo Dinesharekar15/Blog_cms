@@ -318,7 +318,8 @@ const searchUsers = async (req, res) => {
         const users = await prisma.user.findMany({
             where: {
                 name: { contains: q, mode: "insensitive" },
-                isVerified: true,
+                // Note: isVerified filter removed so users can find anyone to chat with.
+                // You can re-add it for the public blog search page if needed.
             },
             select: { id: true, name: true, profileImg: true, bio: true },
             take: LIMIT + 1,

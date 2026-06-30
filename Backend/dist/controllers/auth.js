@@ -14,6 +14,8 @@ function createRefreshToken() {
 /** Set both auth_token (1h) and refresh_token (7d) cookies */
 function setAuthCookies(res, accessToken, refreshToken) {
     const isProduction = process.env.NODE_ENV === "production";
+    console.log("NODE_ENV =", process.env.NODE_ENV);
+    console.log("isProduction =", isProduction);
     res.cookie("auth_token", accessToken, {
         httpOnly: true,
         // "none" is required for cross-domain requests (frontend & backend on different domains).

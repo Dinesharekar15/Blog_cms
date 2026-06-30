@@ -1,12 +1,13 @@
-import { resend } from "./resend.js";
-const FROM_EMAIL = process.env.FROM_EMAIL || "onboarding@resend.dev";
+import { transporter } from "./brevo.js";
+const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@yourdomain.com";
 const APP_NAME = "BlogCMS";
 export async function sendOtpEmail(to, otp) {
-    const { error } = await resend.emails.send({
-        from: `${APP_NAME} <${FROM_EMAIL}>`,
-        to,
-        subject: `Your ${APP_NAME} verification code: ${otp}`,
-        html: `
+    try {
+        await transporter.sendMail({
+            from: `${APP_NAME} <${FROM_EMAIL}>`,
+            to,
+            subject: `Your ${APP_NAME} verification code: ${otp}`,
+            html: `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -55,18 +56,20 @@ export async function sendOtpEmail(to, otp) {
       </body>
       </html>
     `,
-    });
-    if (error) {
-        console.error("Resend email error:", error);
+        });
+    }
+    catch (error) {
+        console.error("Brevo sendOtpEmail error:", error);
         throw new Error(`Failed to send OTP email: ${error.message}`);
     }
 }
 export async function sendPasswordResetEmail(to, otp) {
-    const { error } = await resend.emails.send({
-        from: `${APP_NAME} <${FROM_EMAIL}>`,
-        to,
-        subject: `Reset your ${APP_NAME} password`,
-        html: `
+    try {
+        await transporter.sendMail({
+            from: `${APP_NAME} <${FROM_EMAIL}>`,
+            to,
+            subject: `Reset your ${APP_NAME} password`,
+            html: `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -115,9 +118,10 @@ export async function sendPasswordResetEmail(to, otp) {
       </body>
       </html>
     `,
-    });
-    if (error) {
-        console.error("Resend password reset email error:", error);
+        });
+    }
+    catch (error) {
+        console.error("Brevo sendPasswordResetEmail error:", error);
         throw new Error(`Failed to send password reset email: ${error.message}`);
     }
 }
