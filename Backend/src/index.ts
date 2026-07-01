@@ -18,12 +18,17 @@ dotenv.config()
 const app = express()
 const httpServer = createServer(app)
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000"
+const FRONTEND_URL = (process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/$/, "")
+const allowedOrigins = [
+  FRONTEND_URL,
+  "https://blog-cms-gules-sigma.vercel.app",
+  "http://localhost:3000"
+]
 
 // ─── Socket.IO setup ──────────────────────────────────────────────────────────
 const io = new SocketIOServer(httpServer, {
   cors: {
-    origin: FRONTEND_URL,
+    origin: allowedOrigins,
     credentials: true,
   },
 })
@@ -31,8 +36,14 @@ const io = new SocketIOServer(httpServer, {
 // Authenticate socket connections using the JWT cookie
 io.use((socket, next) => {
   const cookieHeader = socket.handshake.headers.cookie || ""
-  const tokenMatch = cookieHeader.match(/auth_token=([^;]+)/)
-  const token = tokenMatch?.[1]
+  const cookies: Record<string, string> = {}
+  cookieHeader.split(";").forEach((cookie) => {
+    const parts = cookie.split("=")
+    if (parts.length >= 2) {
+      cookies[parts[0].trim()] = parts[1].trim()
+    }
+  })
+  const token = cookies["auth_token"]
 
   if (!token) return next(new Error("No auth token"))
 
@@ -152,7 +163,7 @@ io.on("connection", (socket) => {
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin: allowedOrigins,
   credentials: true,
 }))
 
